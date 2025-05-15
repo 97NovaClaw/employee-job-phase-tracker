@@ -71,6 +71,4 @@ function ejpt_get_form_access_capability() {
     // 'read' means any logged-in user. 
     // Consider creating a custom role/capability for more fine-grained control.
     return apply_filters('ejpt_form_access_capability', 'read'); 
-}
-
-?> 
+} 

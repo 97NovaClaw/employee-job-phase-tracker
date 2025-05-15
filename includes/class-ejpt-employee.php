@@ -175,5 +175,4 @@ class EJPT_Employee {
             wp_send_json_success( array( 'message' => $message, 'new_status' => $new_status ) );
         }
     }
-}
-?> 
+} 

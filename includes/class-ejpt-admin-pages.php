@@ -169,5 +169,4 @@ class EJPT_Admin_Pages {
             wp_send_json_success(['message' => 'Job phase stopped and KPIs recorded successfully.']);
         }
     }
-}
-?> 
+} 

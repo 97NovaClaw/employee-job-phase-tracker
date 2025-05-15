@@ -700,4 +700,3 @@ class EJPT_DB {
 
 // Initialize table names on load
 add_action('plugins_loaded', array('EJPT_DB', 'init'), 5); // Lower priority to ensure $wpdb is available
-?> 

@@ -204,5 +204,4 @@ class EJPT_Dashboard {
             'data'            => $data,
         ));
     }
-}
-?> 
+} 
