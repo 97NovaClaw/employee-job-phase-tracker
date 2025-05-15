@@ -66,7 +66,7 @@ global $employees, $phases;
 
     <div id="ejpt-quick-actions" style="margin-bottom: 30px; padding: 15px; background-color: #fff; border: 1px solid #ccd0d4;">
         <h2><?php esc_html_e('Quick Phase Actions', 'ejpt'); ?></h2>
-        <p><?php esc_html_e('Enter a Job Number and select a phase to generate Start/Stop links.', 'ejpt'); ?></p>
+        <p><?php esc_html_e('Enter a Job Number and select a phase to start or stop.', 'ejpt'); ?></p>
         <?php 
         // --- DASHBOARD VIEW DEBUGGING ---
         if (defined('WP_DEBUG') && WP_DEBUG === true) {
@@ -96,8 +96,8 @@ global $employees, $phases;
                         <th scope="row" style="width: 200px;"><?php echo esc_html($phase->phase_name); ?></th>
                         <td>
                             <input type="text" class="ejpt-job-number-input" placeholder="<?php esc_attr_e('Enter Job Number', 'ejpt'); ?>" style="width: 200px; margin-right: 10px;">
-                            <button class="button ejpt-start-link-btn" data-phase-id="<?php echo esc_attr($phase->phase_id); ?>"><?php esc_html_e('Start Link', 'ejpt'); ?></button>
-                            <button class="button ejpt-stop-link-btn" data-phase-id="<?php echo esc_attr($phase->phase_id); ?>"><?php esc_html_e('Stop Link', 'ejpt'); ?></button>
+                            <button class="button button-primary ejpt-start-link-btn" data-phase-id="<?php echo esc_attr($phase->phase_id); ?>"><?php esc_html_e('Start', 'ejpt'); ?></button>
+                            <button class="button ejpt-stop-link-btn" data-phase-id="<?php echo esc_attr($phase->phase_id); ?>"><?php esc_html_e('Stop', 'ejpt'); ?></button>
                             <span class="ejpt-generated-link-area" style="margin-left: 15px;"></span>
                         </td>
                     </tr>
@@ -314,40 +314,49 @@ jQuery(document).ready(function($) {
     // JS for Quick Phase Actions
     $('.ejpt-start-link-btn, .ejpt-stop-link-btn').on('click', function(e) {
         e.preventDefault();
-        console.log('Quick action button clicked.'); // DEBUG
+        console.log('Quick action button clicked.');
         var $button = $(this);
         var $row = $button.closest('.ejpt-phase-action-row');
         var jobNumber = $row.find('.ejpt-job-number-input').val();
         var phaseId = $button.data('phase-id');
         var isAdminUrl = '<?php echo admin_url("admin.php"); ?>';
-        var linkArea = $row.find('.ejpt-generated-link-area');
+        // var linkArea = $row.find('.ejpt-generated-link-area'); // No longer needed for displaying link
 
-        console.log('Job Number:', jobNumber, 'Phase ID:', phaseId, 'Row found:', $row.length); // DEBUG
+        console.log('Job Number:', jobNumber, 'Phase ID:', phaseId, 'Row found:', $row.length);
 
         if (!jobNumber) {
-            linkArea.html('<span style="color:red;"><?php echo esc_js(__("Please enter a Job Number.", "ejpt")); ?></span>');
-            console.log('Job number is missing.'); // DEBUG
+            // linkArea.html('<span style="color:red;"><?php echo esc_js(__("Please enter a Job Number.", "ejpt")); ?></span>');
+            showNotice('error', '<?php echo esc_js(__("Please enter a Job Number first.", "ejpt")); ?>');
+            console.log('Job number is missing.');
             return;
         }
 
         var actionPage = $button.hasClass('ejpt-start-link-btn') ? 'ejpt_start_job' : 'ejpt_stop_job';
         var url = isAdminUrl + '?page=' + actionPage + '&job_number=' + encodeURIComponent(jobNumber) + '&phase_id=' + encodeURIComponent(phaseId);
-        console.log('Generated URL:', url); // DEBUG
+        console.log('Generated URL:', url);
         
-        var linkText = $button.hasClass('ejpt-start-link-btn') ? '<?php echo esc_js(__("Go to Start Form", "ejpt")); ?>' : '<?php echo esc_js(__("Go to Stop Form", "ejpt")); ?>';
-        linkArea.html('<a href="' + url + '" target="_blank">' + linkText + ' (' + jobNumber + ')</a> <button class="button button-small ejpt-copy-link-btn" data-link="' + url + '"><?php echo esc_js(__("Copy")); ?></button>');
+        // Navigate directly 
+        window.location.href = url; // Changed from window.open to navigate in the same tab
+        
+        // Remove previously displayed link and copy button logic
+        // var linkText = $button.hasClass('ejpt-start-link-btn') ? '<?php echo esc_js(__("Go to Start Form", "ejpt")); ?>' : '<?php echo esc_js(__("Go to Stop Form", "ejpt")); ?>';
+        // linkArea.html('<a href="' + url + '" target="_blank">' + linkText + ' (' + jobNumber + ')</a> <button class="button button-small ejpt-copy-link-btn" data-link="' + url + '"><?php echo esc_js(__("Copy")); ?></button>');
     });
 
+    // The .ejpt-copy-link-btn logic can be removed if not used elsewhere, or kept if useful for other generated links.
+    // For now, I'll comment it out as it's not directly used by the modified quick actions.
+    /*
     $('body').on('click', '.ejpt-copy-link-btn', function(){ 
-        console.log('Copy button clicked.'); // DEBUG
+        console.log('Copy button clicked.');
         var linkToCopy = $(this).data('link');
-        console.log('Link to copy:', linkToCopy); // DEBUG
+        console.log('Link to copy:', linkToCopy);
         navigator.clipboard.writeText(linkToCopy).then(function() {
             showNotice('success', '<?php echo esc_js(__("Link copied to clipboard!", "ejpt")); ?>');
         }, function(err) {
             showNotice('error', '<?php echo esc_js(__("Could not copy link: ", "ejpt")); ?>' + err);
         });
     });
+    */
 
     // JS for Edit Job Log Modal
     var editLogModal = $('#ejptEditLogModal');

@@ -168,25 +168,21 @@ jQuery(document).ready(function($) {
         $submitButton.prop('disabled', true).text('Starting...');
         
         var formData = $form.serialize();
-        // Nonce is already part of formData due to wp_nonce_field in the form itself.
-        // formData += '&action=ejpt_start_job_action&_ajax_nonce=' + $('#ejpt_start_job_nonce').val(); // Not needed if nonce field is named _ajax_nonce
         formData += '&action=ejpt_start_job_action';
 
         $.post(ejpt_ajax.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
-                    // Reset only specific fields if needed, e.g., employee dropdown
-                    $form.find('#employee_id_start').val('');
-                    // Optionally, could update current time display or clear notes if they were added.
+                    // Redirect to dashboard
+                    window.location.href = '<?php echo admin_url("admin.php?page=ejpt_dashboard"); ?>';
                 } else {
                     showNotice('error', response.data.message || 'An unknown error occurred.');
+                    $submitButton.prop('disabled', false).text('Start Job'); // Re-enable only on error
                 }
             })
             .fail(function() {
                 showNotice('error', 'Request failed. Please try again.');
-            })
-            .always(function() {
                 $submitButton.prop('disabled', false).text('Start Job');
             });
     });
@@ -205,18 +201,15 @@ jQuery(document).ready(function($) {
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
-                     $form[0].reset(); // Reset the whole form on success
-                     // Or selectively reset: 
-                     // $form.find('#employee_id_stop, #boxes_completed, #items_completed, #notes_stop').val('');
-                     // $form.find('#boxes_completed, #items_completed').val('0');
+                    // Redirect to dashboard
+                    window.location.href = '<?php echo admin_url("admin.php?page=ejpt_dashboard"); ?>';
                 } else {
                     showNotice('error', response.data.message || 'An unknown error occurred.');
+                    $submitButton.prop('disabled', false).text('Stop Job & Save'); // Re-enable only on error
                 }
             })
             .fail(function() {
                 showNotice('error', 'Request failed. Please try again.');
-            })
-            .always(function() {
                 $submitButton.prop('disabled', false).text('Stop Job & Save');
             });
     });
