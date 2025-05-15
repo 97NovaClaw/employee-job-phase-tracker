@@ -105,4 +105,48 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
         </div>
     </form>
 </div>
-<!-- Specific JS for this page can go here if showNotice is not globally available --> 
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    // Common function to display notices (if needed on this page specifically)
+    if (typeof window.showNotice !== 'function') {
+        window.showNotice = function(type, message) {
+            $('.ejpt-notice').remove();
+            var noticeHtml = '<div class="notice notice-' + type + ' is-dismissible ejpt-notice"><p>' + message + '</p>' +
+                             '<button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>';
+            $('div.wrap > h1').first().after(noticeHtml);
+            setTimeout(function() {
+                $('.ejpt-notice').fadeOut('slow', function() { $(this).remove(); });
+            }, 5000);
+            $('.ejpt-notice .notice-dismiss').on('click', function(event) {
+                event.preventDefault();
+                $(this).closest('.ejpt-notice').remove();
+            });
+        };
+    }
+
+    const startJobButton = $('#start-job-submit');
+    const employeeSelect = $('#employee_id_start');
+    const phpFormDisabled = <?php echo json_encode($form_disabled); ?>;
+
+    function updateButtonState() {
+        if (phpFormDisabled) {
+            startJobButton.prop('disabled', true);
+            console.log('Start Job button disabled by PHP.');
+        } else if (employeeSelect.val() === '') {
+            startJobButton.prop('disabled', true);
+            console.log('Start Job button disabled (no employee selected).');
+        } else {
+            startJobButton.prop('disabled', false);
+            console.log('Start Job button enabled.');
+        }
+    }
+
+    // Initial state check
+    updateButtonState();
+
+    // Update button state when employee selection changes
+    employeeSelect.on('change', updateButtonState);
+
+    // AJAX submission is in admin-scripts.js
+});
+</script> 
