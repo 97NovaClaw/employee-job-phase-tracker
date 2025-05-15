@@ -382,7 +382,7 @@ jQuery(document).ready(function($) {
             success: function(response) {
                 console.log('Dashboard JS: AJAX success for get_job_log_details. Response:', response); // DEBUG Line 3
                 if (response.success) {
-                    ejpt_log('Successfully fetched log details: ', response.data); // Keep this server-side log for details
+                    console.log('Dashboard JS: Successfully fetched log details (data to populate modal):', response.data); // JS-side log
                     var log = response.data;
                     editLogForm.find('#edit_log_id').val(log.log_id);
                     editLogForm.find('#edit_log_employee_id').val(log.employee_id);
@@ -397,7 +397,6 @@ jQuery(document).ready(function($) {
                     editLogModal.show();
                 } else {
                     showNotice('error', response.data.message || '<?php echo esc_js(__("Could not fetch log details.", "ejpt")); ?>');
-                    ejpt_log('Error fetching log details: ', response.data);
                 }
                 $clickedButton.prop('disabled', false).text('<?php echo esc_js(__("Edit", "ejpt")); ?>'); // Re-enable button
             },
