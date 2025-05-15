@@ -213,7 +213,7 @@ jQuery(document).ready(function($) {
     $('.ejpt-edit-employee-button').on('click', function() {
         var employeeId = $(this).data('employee-id');
         
-        $.post(ejpt_ajax.ajax_url, {
+        $.post(ejpt_data.ajax_url, {
             action: 'ejpt_get_employee',
             employee_id: employeeId,
             _ajax_nonce_get_employee: '<?php echo wp_create_nonce('ejpt_edit_employee_nonce'); ?>' 
@@ -244,7 +244,7 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        $.post(ejpt_ajax.ajax_url, {
+        $.post(ejpt_data.ajax_url, {
             action: 'ejpt_toggle_employee_status',
             employee_id: employeeId,
             is_active: newStatus,

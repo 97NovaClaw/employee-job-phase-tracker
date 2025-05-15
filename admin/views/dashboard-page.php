@@ -161,7 +161,7 @@ jQuery(document).ready(function($) {
         processing: true,
         serverSide: true,
         ajax: {
-            url: ejpt_ajax.ajax_url,
+            url: ejpt_data.ajax_url,
             type: 'POST',
             data: function(d) { 
                 d.action = 'ejpt_get_dashboard_data';
@@ -261,7 +261,7 @@ jQuery(document).ready(function($) {
         delete exportParams.start;
         delete exportParams.search;
 
-        $.post(ejpt_ajax.ajax_url, exportParams, function(response) {
+        $.post(ejpt_data.ajax_url, exportParams, function(response) {
             if (response.data && response.data.length > 0) {
                 var csvData = [];
                 var headers = [
@@ -380,7 +380,7 @@ jQuery(document).ready(function($) {
         var $clickedButton = $(this);
 
         $.ajax({
-            url: ejpt_ajax.ajax_url,
+            url: ejpt_data.ajax_url,
             type: 'POST',
             data: {
                 action: 'ejpt_get_job_log_details',
@@ -430,7 +430,7 @@ jQuery(document).ready(function($) {
 
         ejpt_log('Submitting Edit Log Form Data:', formData);
 
-        $.post(ejpt_ajax.ajax_url, formData)
+        $.post(ejpt_data.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);

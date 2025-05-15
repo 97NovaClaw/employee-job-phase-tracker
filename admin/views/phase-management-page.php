@@ -188,10 +188,10 @@ jQuery(document).ready(function($) {
     // Handle "Edit Phase" button click
     $('.ejpt-edit-phase-button').on('click', function() {
         var phaseId = $(this).data('phase-id');
-        $.post(ejpt_ajax.ajax_url, {
+        $.post(ejpt_data.ajax_url, {
             action: 'ejpt_get_phase',
             phase_id: phaseId,
-            _ajax_nonce_get_phase: '<?php echo wp_create_nonce('ejpt_edit_phase_nonce'); ?>'
+            _ajax_nonce_get_phase: '<?php echo wp_create_nonce("ejpt_edit_phase_nonce"); ?>'
         }, function(response) {
             if (response.success) {
                 $('#edit_phase_id').val(response.data.phase_id);
@@ -211,18 +211,18 @@ jQuery(document).ready(function($) {
         var phaseId = $(this).data('phase-id');
         var newStatus = $(this).data('new-status');
         var confirmMessage = newStatus == 1 ? 
-            '<?php echo esc_js(__('Are you sure you want to activate this phase?', 'ejpt')); ?>' : 
-            '<?php echo esc_js(__('Are you sure you want to deactivate this phase?', 'ejpt')); ?>';
+            '<?php echo esc_js(__("Are you sure you want to activate this phase?", "ejpt")); ?>' : 
+            '<?php echo esc_js(__("Are you sure you want to deactivate this phase?", "ejpt")); ?>';
 
         if (!confirm(confirmMessage)) {
             return;
         }
         
-        $.post(ejpt_ajax.ajax_url, {
+        $.post(ejpt_data.ajax_url, {
             action: 'ejpt_toggle_phase_status',
             phase_id: phaseId,
             is_active: newStatus,
-            _ajax_nonce: '<?php echo wp_create_nonce('ejpt_toggle_status_nonce'); ?>'
+            _ajax_nonce: '<?php echo wp_create_nonce("ejpt_toggle_status_nonce"); ?>'
         }, function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
@@ -234,5 +234,22 @@ jQuery(document).ready(function($) {
             showNotice('error', 'Request to change phase status failed.');
         });
     });
+    
+    // Common function to display notices
+    if (typeof showNotice !== 'function') {
+        window.showNotice = function(type, message) {
+            $('.ejpt-notice').remove();
+            var noticeHtml = '<div class="notice notice-' + type + ' is-dismissible ejpt-notice"><p>' + message + '</p>' +
+                             '<button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>';
+            $('div.wrap > h1').after(noticeHtml);
+            setTimeout(function() {
+                $('.ejpt-notice').fadeOut('slow', function() { $(this).remove(); });
+            }, 5000);
+            $('.ejpt-notice .notice-dismiss').on('click', function(event) {
+                event.preventDefault();
+                $(this).closest('.ejpt-notice').remove();
+            });
+        };
+    }
 });
 </script> 
