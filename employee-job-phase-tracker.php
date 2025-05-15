@@ -103,3 +103,7 @@ add_action('wp_ajax_ejpt_toggle_phase_status', array('EJPT_Phase', 'ajax_toggle_
 
 // AJAX handler for dashboard data
 add_action('wp_ajax_ejpt_get_dashboard_data', array('EJPT_Dashboard', 'ajax_get_dashboard_data'));
+
+// AJAX handlers for editing job logs from dashboard
+add_action('wp_ajax_ejpt_get_job_log_details', array('EJPT_Dashboard', 'ajax_get_job_log_details'));
+add_action('wp_ajax_ejpt_update_job_log', array('EJPT_Dashboard', 'ajax_update_job_log'));

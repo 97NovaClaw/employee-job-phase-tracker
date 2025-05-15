@@ -125,6 +125,7 @@ global $employees, $phases;
                 <th><?php esc_html_e('Items/Hr', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Status', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Notes', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Actions', 'ejpt'); ?></th>
             </tr>
         </thead>
         <tbody>
@@ -146,6 +147,7 @@ global $employees, $phases;
                 <th><?php esc_html_e('Items/Hr', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Status', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Notes', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Actions', 'ejpt'); ?></th>
             </tr>
         </tfoot>
     </table>
@@ -193,6 +195,15 @@ jQuery(document).ready(function($) {
                 }
                 return escData;
               } 
+            },
+            {
+                data: null, // Using null for custom content
+                orderable: false,
+                searchable: false,
+                className: 'ejpt-actions-column',
+                render: function(data, type, row) {
+                    return '<button class="button button-secondary ejpt-edit-log-button" data-log-id="' + row.log_id + '"><?php echo esc_js(__("Edit", "ejpt")); ?></button>';
+                }
             }
         ],
         order: [[4, 'desc']], // Default order by start_time descending
@@ -338,5 +349,170 @@ jQuery(document).ready(function($) {
         });
     });
 
+    // JS for Edit Job Log Modal
+    var editLogModal = $('#ejptEditLogModal');
+    var editLogForm = $('#ejpt-edit-log-form');
+
+    // Handle click on "Edit" button in DataTable
+    $('#ejpt-dashboard-table tbody').on('click', '.ejpt-edit-log-button', function () {
+        var logId = $(this).data('log-id');
+        ejpt_log('Edit button clicked for log ID: ' + logId, 'Dashboard JS');
+
+        $.ajax({
+            url: ejpt_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'ejpt_get_job_log_details',
+                nonce: '<?php echo wp_create_nonce("ejpt_edit_log_nonce"); ?>', // Matches the nonce in ajax_get_job_log_details
+                log_id: logId
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    ejpt_log('Successfully fetched log details: ', response.data);
+                    var log = response.data;
+                    editLogForm.find('#edit_log_id').val(log.log_id);
+                    editLogForm.find('#edit_log_employee_id').val(log.employee_id);
+                    editLogForm.find('#edit_log_job_number').val(log.job_number);
+                    editLogForm.find('#edit_log_phase_id').val(log.phase_id);
+                    editLogForm.find('#edit_log_start_time').val(log.start_time); // Assumes YYYY-MM-DDTHH:MM format
+                    editLogForm.find('#edit_log_end_time').val(log.end_time);     // Assumes YYYY-MM-DDTHH:MM format
+                    editLogForm.find('#edit_log_boxes_completed').val(log.boxes_completed || 0);
+                    editLogForm.find('#edit_log_items_completed').val(log.items_completed || 0);
+                    editLogForm.find('#edit_log_status').val(log.status);
+                    editLogForm.find('#edit_log_notes').val(log.notes);
+                    editLogModal.show();
+                } else {
+                    showNotice('error', response.data.message || '<?php echo esc_js(__("Could not fetch log details.", "ejpt")); ?>');
+                    ejpt_log('Error fetching log details: ', response.data);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                showNotice('error', '<?php echo esc_js(__("AJAX request failed: ", "ejpt")); ?>' + textStatus + ' - ' + errorThrown);
+                ejpt_log('AJAX error fetching log details: ' + textStatus + ' - ' + errorThrown, 'Dashboard JS');
+            }
+        });
+    });
+
+    // Handle Edit Job Log form submission
+    editLogForm.on('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+        var $submitButton = $form.find('input[type="submit"]');
+        $submitButton.prop('disabled', true).val('<?php echo esc_js(__("Saving...", "ejpt")); ?>');
+        
+        var formData = $form.serialize(); // Includes nonce if named ejpt_edit_log_nonce_field
+        formData += '&action=ejpt_update_job_log'; // Add action manually
+
+        ejpt_log('Submitting Edit Log Form Data:', formData);
+
+        $.post(ejpt_ajax.ajax_url, formData)
+            .done(function(response) {
+                if (response.success) {
+                    showNotice('success', response.data.message);
+                    editLogModal.hide();
+                    if (typeof dashboardTable !== 'undefined') {
+                        dashboardTable.ajax.reload(null, false); // Reload DataTable, false = don't reset pagination
+                    }
+                } else {
+                    showNotice('error', response.data.message || '<?php echo esc_js(__("Error updating job log.", "ejpt")); ?>');
+                }
+            })
+            .fail(function(jqXHR, textStatus, errorThrown) {
+                showNotice('error', '<?php echo esc_js(__("AJAX request failed: ", "ejpt")); ?>' + textStatus + ' - ' + errorThrown);
+            })
+            .always(function() {
+                $submitButton.prop('disabled', false).val('<?php echo esc_js(__("Save Log Changes", "ejpt")); ?>');
+            });
+    });
+
 });
-</script> 
+</script>
+
+<!-- Edit Job Log Modal -->
+<div id="ejptEditLogModal" class="ejpt-modal" style="display:none;">
+    <div class="ejpt-modal-content">
+        <span class="ejpt-close-button">&times;</span>
+        <h2><?php esc_html_e( 'Edit Job Log Entry', 'ejpt' ); ?></h2>
+        <form id="ejpt-edit-log-form">
+            <?php wp_nonce_field( 'ejpt_edit_log_nonce', 'ejpt_edit_log_nonce_field' ); ?>
+            <input type="hidden" id="edit_log_id" name="edit_log_id" value="" />
+            <table class="form-table ejpt-form-table">
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_employee_id"><?php esc_html_e( 'Employee', 'ejpt' ); ?></label></th>
+                    <td>
+                        <select id="edit_log_employee_id" name="edit_log_employee_id" required>
+                            <option value=""><?php esc_html_e('-- Select Employee --', 'ejpt'); ?></option>
+                            <?php 
+                            // Use the already available $GLOBALS['employees'] if populated, otherwise fetch them.
+                            // This assumes $GLOBALS['employees'] has active employees for the dashboard filters.
+                            $modal_employees = isset($GLOBALS['employees']) && is_array($GLOBALS['employees']) ? $GLOBALS['employees'] : ejpt_get_active_employees_for_select();
+                            if (!empty($modal_employees)) {
+                                foreach ( $modal_employees as $emp_obj_or_arr ) {
+                                    // Handle if $emp_obj_or_arr is object from DB or array from ejpt_get_active_employees_for_select
+                                    $emp_id = is_object($emp_obj_or_arr) ? $emp_obj_or_arr->employee_id : $emp_obj_or_arr['id'];
+                                    $emp_name = is_object($emp_obj_or_arr) ? esc_html( $emp_obj_or_arr->first_name . ' ' . $emp_obj_or_arr->last_name . ' (' . $emp_obj_or_arr->employee_number . ')' ) : $emp_obj_or_arr['name'];
+                                    echo '<option value="' . esc_attr( $emp_id ) . '">' . $emp_name . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_job_number"><?php esc_html_e( 'Job Number', 'ejpt' ); ?></label></th>
+                    <td><input type="text" id="edit_log_job_number" name="edit_log_job_number" required /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_phase_id"><?php esc_html_e( 'Phase', 'ejpt' ); ?></label></th>
+                    <td>
+                        <select id="edit_log_phase_id" name="edit_log_phase_id" required>
+                            <option value=""><?php esc_html_e('-- Select Phase --', 'ejpt'); ?></option>
+                            <?php 
+                            $modal_phases = isset($GLOBALS['phases']) && is_array($GLOBALS['phases']) ? $GLOBALS['phases'] : ejpt_get_active_phases_for_select();
+                            if (!empty($modal_phases)) {
+                                foreach ( $modal_phases as $phase_obj_or_arr ) {
+                                    $phase_item_id = is_object($phase_obj_or_arr) ? $phase_obj_or_arr->phase_id : $phase_obj_or_arr['id'];
+                                    $phase_item_name = is_object($phase_obj_or_arr) ? esc_html($phase_obj_or_arr->phase_name) : $phase_obj_or_arr['name'];
+                                    echo '<option value="' . esc_attr( $phase_item_id ) . '">' . $phase_item_name . '</option>';
+                                }
+                            }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_start_time"><?php esc_html_e( 'Start Time', 'ejpt' ); ?></label></th>
+                    <td><input type="datetime-local" id="edit_log_start_time" name="edit_log_start_time" required /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_end_time"><?php esc_html_e( 'End Time', 'ejpt' ); ?></label></th>
+                    <td><input type="datetime-local" id="edit_log_end_time" name="edit_log_end_time" /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_boxes_completed"><?php esc_html_e( 'Boxes Completed', 'ejpt' ); ?></label></th>
+                    <td><input type="number" id="edit_log_boxes_completed" name="edit_log_boxes_completed" min="0" /></td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_items_completed"><?php esc_html_e( 'Items Completed', 'ejpt' ); ?></label></th>
+                    <td><input type="number" id="edit_log_items_completed" name="edit_log_items_completed" min="0" /></td>
+                </tr>
+                 <tr valign="top">
+                    <th scope="row"><label for="edit_log_status"><?php esc_html_e( 'Status', 'ejpt' ); ?></label></th>
+                    <td>
+                        <select id="edit_log_status" name="edit_log_status">
+                            <option value="started"><?php esc_html_e('Started', 'ejpt'); ?></option>
+                            <option value="completed"><?php esc_html_e('Completed', 'ejpt'); ?></option>
+                            <!-- Add other statuses if implemented, e.g., Paused -->
+                        </select>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><label for="edit_log_notes"><?php esc_html_e( 'Notes', 'ejpt' ); ?></label></th>
+                    <td><textarea id="edit_log_notes" name="edit_log_notes" rows="3"></textarea></td>
+                </tr>
+            </table>
+            <?php submit_button( __( 'Save Log Changes', 'ejpt' ), 'primary', 'submit_edit_log' ); ?>
+        </form>
+    </div>
+</div> 

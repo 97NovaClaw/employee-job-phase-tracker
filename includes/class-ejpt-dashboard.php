@@ -177,6 +177,7 @@ class EJPT_Dashboard {
             }
 
             $data[] = array(
+                'log_id'           => $log->log_id,
                 'employee_name'    => $employee_name,
                 // 'employee_number'  => esc_html($log->employee_number), // Removed as per request
                 'job_number'       => esc_html($log->job_number),
@@ -202,5 +203,100 @@ class EJPT_Dashboard {
             'recordsFiltered' => $total_filtered_records,
             'data'            => $data,
         ));
+    }
+
+    /**
+     * Handle AJAX request to get details for a single job log for editing.
+     */
+    public static function ajax_get_job_log_details() {
+        check_ajax_referer('ejpt_edit_log_nonce', 'nonce'); // Or a more specific nonce
+        ejpt_log('AJAX: Get job log details', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
+
+        if (!current_user_can(ejpt_get_capability())) {
+            wp_send_json_error(['message' => 'Permission denied.'], 403);
+            return;
+        }
+
+        $log_id = isset($_POST['log_id']) ? intval($_POST['log_id']) : 0;
+        if ($log_id <= 0) {
+            wp_send_json_error(['message' => 'Invalid Log ID.']);
+            return;
+        }
+
+        $log_details = EJPT_DB::get_job_log($log_id);
+
+        if ($log_details) {
+            // Format datetime fields for datetime-local input
+            if (!empty($log_details->start_time)) {
+                $log_details->start_time = date('Y-m-d\TH:i', strtotime($log_details->start_time));
+            }
+            if (!empty($log_details->end_time)) {
+                $log_details->end_time = date('Y-m-d\TH:i', strtotime($log_details->end_time));
+            }
+            wp_send_json_success($log_details);
+        } else {
+            wp_send_json_error(['message' => 'Job log not found.']);
+        }
+    }
+
+    /**
+     * Handle AJAX request to update a job log entry.
+     */
+    public static function ajax_update_job_log() {
+        check_ajax_referer('ejpt_edit_log_nonce_field', 'ejpt_edit_log_nonce_field');
+        ejpt_log('AJAX: Update job log', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
+
+        if (!current_user_can(ejpt_get_capability())) {
+            wp_send_json_error(['message' => 'Permission denied.'], 403);
+            return;
+        }
+
+        $log_id = isset($_POST['edit_log_id']) ? intval($_POST['edit_log_id']) : 0;
+        if ($log_id <= 0) {
+            wp_send_json_error(['message' => 'Invalid Log ID for update.']);
+            return;
+        }
+
+        // Sanitize and prepare data from $_POST
+        $data_to_update = array();
+        $allowed_fields = ['employee_id', 'job_number', 'phase_id', 'start_time', 'end_time', 'boxes_completed', 'items_completed', 'status', 'notes'];
+        
+        // Fields from form have 'edit_log_' prefix
+        if (isset($_POST['edit_log_employee_id'])) $data_to_update['employee_id'] = intval($_POST['edit_log_employee_id']);
+        if (isset($_POST['edit_log_job_number'])) $data_to_update['job_number'] = sanitize_text_field($_POST['edit_log_job_number']);
+        if (isset($_POST['edit_log_phase_id'])) $data_to_update['phase_id'] = intval($_POST['edit_log_phase_id']);
+        
+        // Handle datetime-local format (YYYY-MM-DDTHH:MM) and convert to MySQL DATETIME (YYYY-MM-DD HH:MM:SS)
+        if (isset($_POST['edit_log_start_time'])) {
+            $start_time_dt = new DateTime($_POST['edit_log_start_time'], wp_timezone());
+            $data_to_update['start_time'] = $start_time_dt->format('Y-m-d H:i:s');
+        } 
+        if (isset($_POST['edit_log_end_time']) && !empty($_POST['edit_log_end_time'])) {
+            $end_time_dt = new DateTime($_POST['edit_log_end_time'], wp_timezone());
+            $data_to_update['end_time'] = $end_time_dt->format('Y-m-d H:i:s');
+        } else {
+            $data_to_update['end_time'] = null; // Allow clearing end time
+        }
+
+        if (isset($_POST['edit_log_boxes_completed'])) $data_to_update['boxes_completed'] = intval($_POST['edit_log_boxes_completed']);
+        if (isset($_POST['edit_log_items_completed'])) $data_to_update['items_completed'] = intval($_POST['edit_log_items_completed']);
+        if (isset($_POST['edit_log_status'])) $data_to_update['status'] = sanitize_text_field($_POST['edit_log_status']);
+        if (isset($_POST['edit_log_notes'])) $data_to_update['notes'] = sanitize_textarea_field($_POST['edit_log_notes']);
+
+        // Validate required fields (e.g., employee, job number, phase, start_time, status)
+        if (empty($data_to_update['employee_id']) || empty($data_to_update['job_number']) || empty($data_to_update['phase_id']) || empty($data_to_update['start_time']) || empty($data_to_update['status'])) {
+            wp_send_json_error(['message' => 'Missing required fields for log update.']);
+            return;
+        }
+
+        $result = EJPT_DB::update_job_log($log_id, $data_to_update);
+
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => 'Error updating job log: ' . $result->get_error_message()]);
+        } else {
+            wp_send_json_success(['message' => 'Job log updated successfully.']);
+        }
     }
 } 
