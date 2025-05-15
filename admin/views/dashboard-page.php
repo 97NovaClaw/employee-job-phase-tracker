@@ -76,7 +76,7 @@ global $employees, $phases;
             ejpt_log('Dashboard View: Result of count($phases) is: ' . count((array)$phases), 'dashboard-view');
         }
         // --- END DASHBOARD VIEW DEBUGGING ---
-        if ( !empty($phases) && count((array)$phases) > 0 ) : ?>
+        if ( !empty($phases) && is_array($phases) && count($phases) > 0 ) : ?>
             <table class="form-table">
                 <?php foreach ($phases as $phase) : ?>
                     <tr valign="top" class="ejpt-phase-action-row">
