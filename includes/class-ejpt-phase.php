@@ -19,11 +19,9 @@ class EJPT_Phase {
             wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
         }
 
-        global $phases, $total_phases, $current_page, $per_page, $search_term, $active_filter;
-
+        // Variables needed by the view
         $search_term = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
         $active_filter = isset($_REQUEST['status_filter']) ? sanitize_text_field($_REQUEST['status_filter']) : 'all';
-
         $per_page = 20;
         $current_page = isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1;
         $offset = ( $current_page - 1 ) * $per_page;
@@ -47,8 +45,15 @@ class EJPT_Phase {
             $phase_args['is_active'] = 0;
         }
 
-        $phases = EJPT_DB::get_phases( $phase_args );
-        $total_phases = EJPT_DB::get_phases_count(array('search' => $search_term, 'is_active' => ($active_filter === 'all' ? null : ($active_filter === 'active' ? 1 : 0)) ));
+        // Assign fetched data directly to $GLOBALS to ensure view access
+        $GLOBALS['phases'] = EJPT_DB::get_phases( $phase_args );
+        $GLOBALS['total_phases'] = EJPT_DB::get_phases_count(array('search' => $search_term, 'is_active' => ($active_filter === 'all' ? null : ($active_filter === 'active' ? 1 : 0)) ));
+        
+        // Pass other local vars needed by the view through $GLOBALS as well for consistency
+        $GLOBALS['current_page'] = $current_page;
+        $GLOBALS['per_page'] = $per_page;
+        $GLOBALS['search_term'] = $search_term;
+        $GLOBALS['active_filter'] = $active_filter;
         
         include_once EJPT_PLUGIN_DIR . 'admin/views/phase-management-page.php';
     }
