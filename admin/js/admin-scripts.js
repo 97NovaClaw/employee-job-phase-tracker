@@ -49,7 +49,7 @@ jQuery(document).ready(function($) {
         $submitButton.prop('disabled', true);
 
         var formData = $form.serialize();
-        $.post(ejpt_ajax.ajax_url, formData + '&action=ejpt_add_employee', function(response) {
+        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_add_employee', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 $form[0].reset();
@@ -75,7 +75,7 @@ jQuery(document).ready(function($) {
         $submitButton.prop('disabled', true);
         
         var formData = $form.serialize();
-        $.post(ejpt_ajax.ajax_url, formData + '&action=ejpt_update_employee', function(response) {
+        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_update_employee', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 if (typeof window.loadEmployeesTable === 'function') {
@@ -100,7 +100,7 @@ jQuery(document).ready(function($) {
         $submitButton.prop('disabled', true);
 
         var formData = $form.serialize();
-        $.post(ejpt_ajax.ajax_url, formData + '&action=ejpt_add_phase', function(response) {
+        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_add_phase', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 $form[0].reset();
@@ -126,7 +126,7 @@ jQuery(document).ready(function($) {
         $submitButton.prop('disabled', true);
 
         var formData = $form.serialize();
-        $.post(ejpt_ajax.ajax_url, formData + '&action=ejpt_update_phase', function(response) {
+        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_update_phase', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 if (typeof window.loadPhasesTable === 'function') {
@@ -170,12 +170,11 @@ jQuery(document).ready(function($) {
         var formData = $form.serialize();
         formData += '&action=ejpt_start_job_action';
 
-        $.post(ejpt_ajax.ajax_url, formData)
+        $.post(ejpt_data.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
-                    // Redirect to dashboard
-                    window.location.href = '<?php echo admin_url("admin.php?page=ejpt_dashboard"); ?>';
+                    window.location.href = ejpt_data.dashboard_url;
                 } else {
                     showNotice('error', response.data.message || 'An unknown error occurred.');
                     $submitButton.prop('disabled', false).text('Start Job'); // Re-enable only on error
@@ -197,12 +196,11 @@ jQuery(document).ready(function($) {
         var formData = $form.serialize();
         formData += '&action=ejpt_stop_job_action';
 
-        $.post(ejpt_ajax.ajax_url, formData)
+        $.post(ejpt_data.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
-                    // Redirect to dashboard
-                    window.location.href = '<?php echo admin_url("admin.php?page=ejpt_dashboard"); ?>';
+                    window.location.href = ejpt_data.dashboard_url;
                 } else {
                     showNotice('error', response.data.message || 'An unknown error occurred.');
                     $submitButton.prop('disabled', false).text('Stop Job & Save'); // Re-enable only on error

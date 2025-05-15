@@ -70,7 +70,13 @@ if ( is_admin() ) {
              strpos($hook_suffix, 'ejpt_stop_job') !== false ) { // for direct access links
             wp_enqueue_style( 'ejpt-admin-styles', EJPT_PLUGIN_URL . 'admin/css/admin-styles.css', array(), '1.0.0' );
             wp_enqueue_script( 'ejpt-admin-scripts', EJPT_PLUGIN_URL . 'admin/js/admin-scripts.js', array( 'jquery', 'jquery-ui-datepicker' ), '1.0.0', true );
-            wp_localize_script( 'ejpt-admin-scripts', 'ejpt_ajax', array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
+            
+            $localized_data = array(
+                'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'dashboard_url' => admin_url( 'admin.php?page=ejpt_dashboard' )
+            );
+            wp_localize_script( 'ejpt-admin-scripts', 'ejpt_data', $localized_data );
+
              // For DataTables
             wp_enqueue_script('datatables', 'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js', array('jquery'), '1.13.6', true);
             wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css');
