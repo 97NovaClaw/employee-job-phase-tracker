@@ -29,6 +29,20 @@ $active_employees = ejpt_get_active_employees_for_select();
 $current_time_display = ejpt_get_current_timestamp_display();
 $form_disabled = empty( $job_number_get ) || !$phase_valid;
 
+// --- START JOB FORM DEBUGGING ---
+if (defined('WP_DEBUG') && WP_DEBUG === true) {
+    ejpt_log(array(
+        'GET_job_number' => isset($_GET['job_number']) ? $_GET['job_number'] : 'Not Set',
+        'GET_phase_id' => isset($_GET['phase_id']) ? $_GET['phase_id'] : 'Not Set',
+        'job_number_get' => $job_number_get,
+        'phase_id_get' => $phase_id_get,
+        'phase_object' => isset($phase) ? $phase : 'Not Fetched',
+        'phase_valid' => $phase_valid,
+        'form_disabled' => $form_disabled
+    ), 'Start Job Form - Initial Params');
+}
+// --- END START JOB FORM DEBUGGING ---
+
 ?>
 <div class="wrap ejpt-start-job-form-page">
     <h1><?php esc_html_e( 'Start Job Phase', 'ejpt' ); ?></h1>
