@@ -70,26 +70,28 @@ global $employees, $phases;
         <?php 
         // --- DASHBOARD VIEW DEBUGGING ---
         if (defined('WP_DEBUG') && WP_DEBUG === true) {
-            ejpt_log('Dashboard View (DEBUG): $phases content just before conditional check:', 'dashboard-view');
-            ejpt_log($phases, 'dashboard-view-phases-var (DEBUG)');
-            ejpt_log('Dashboard View (DEBUG): empty($phases) result: ' . (empty($phases) ? 'true (is empty)' : 'false (not empty)'), 'dashboard-view');
-            if (is_array($phases)) {
-                 ejpt_log('Dashboard View (DEBUG): count($phases) result: ' . count($phases), 'dashboard-view');
+            ejpt_log('Dashboard View (DEBUG): $GLOBALS[\'phases\'] content just before conditional check:', 'dashboard-view');
+            ejpt_log(isset($GLOBALS['phases']) ? $GLOBALS['phases'] : 'GLOBALS[\'phases\'] is not set', 'dashboard-view-phases-var (DEBUG)');
+            ejpt_log('Dashboard View (DEBUG): empty($GLOBALS[\'phases\']) result: ' . (empty($GLOBALS['phases']) ? 'true (is empty)' : 'false (not empty)'), 'dashboard-view');
+            if (isset($GLOBALS['phases']) && is_array($GLOBALS['phases'])) {
+                 ejpt_log('Dashboard View (DEBUG): count($GLOBALS[\'phases\']) result: ' . count($GLOBALS['phases']), 'dashboard-view');
             } else {
-                 ejpt_log('Dashboard View (DEBUG): $phases is not an array, count not applicable directly.', 'dashboard-view');
+                 ejpt_log('Dashboard View (DEBUG): $GLOBALS[\'phases\'] is not an array or not set, count not applicable directly.', 'dashboard-view');
             }
         }
         // --- END DASHBOARD VIEW DEBUGGING ---
         ?>
         <?php 
-        $phases_is_not_empty = !empty($phases);
-        $phases_is_an_array = is_array($phases);
-        $phases_has_items = ($phases_is_an_array && count($phases) > 0);
+        // Use $GLOBALS['phases'] directly for the condition
+        $phases_data_for_view = isset($GLOBALS['phases']) ? $GLOBALS['phases'] : array(); 
+        $phases_is_not_empty = !empty($phases_data_for_view);
+        $phases_is_an_array = is_array($phases_data_for_view);
+        $phases_has_items = ($phases_is_an_array && count($phases_data_for_view) > 0);
 
         if ( $phases_is_not_empty && $phases_has_items ) : 
         ?>
             <table class="form-table">
-                <?php foreach ($phases as $phase) : ?>
+                <?php foreach ($phases_data_for_view as $phase) : // Use the local $phases_data_for_view here ?>
                     <tr valign="top" class="ejpt-phase-action-row">
                         <th scope="row" style="width: 200px;"><?php echo esc_html($phase->phase_name); ?></th>
                         <td>
