@@ -15,14 +15,11 @@ class EJPT_Dashboard {
             wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
         }
         
-        // Active employees for filter dropdown
-        $employees = EJPT_DB::get_employees(array('is_active' => 1, 'orderby' => 'last_name', 'order' => 'ASC', 'number' => -1));
-        // Active phases for filter dropdown
-        $phases = EJPT_DB::get_phases(array('is_active' => 1, 'orderby' => 'phase_name', 'order' => 'ASC', 'number' => -1));
+        // Fetch data and assign to $GLOBALS to ensure view access
+        $GLOBALS['employees'] = EJPT_DB::get_employees(array('is_active' => 1, 'orderby' => 'last_name', 'order' => 'ASC', 'number' => -1));
+        $GLOBALS['phases'] = EJPT_DB::get_phases(array('is_active' => 1, 'orderby' => 'phase_name', 'order' => 'ASC', 'number' => -1));
 
-        // Make them global so the view file can access them.
-        global $employees, $phases;
-
+        // The view file (dashboard-page.php) will use: global $employees, $phases;
         include_once EJPT_PLUGIN_DIR . 'admin/views/dashboard-page.php';
     }
 
