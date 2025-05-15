@@ -307,6 +307,7 @@ jQuery(document).ready(function($) {
     // JS for Quick Phase Actions
     $('.ejpt-start-link-btn, .ejpt-stop-link-btn').on('click', function(e) {
         e.preventDefault();
+        console.log('Quick action button clicked.'); // DEBUG
         var $button = $(this);
         var $row = $button.closest('.ejpt-phase-action-row');
         var jobNumber = $row.find('.ejpt-job-number-input').val();
@@ -314,25 +315,26 @@ jQuery(document).ready(function($) {
         var isAdminUrl = '<?php echo admin_url("admin.php"); ?>';
         var linkArea = $row.find('.ejpt-generated-link-area');
 
+        console.log('Job Number:', jobNumber, 'Phase ID:', phaseId, 'Row found:', $row.length); // DEBUG
+
         if (!jobNumber) {
             linkArea.html('<span style="color:red;"><?php echo esc_js(__("Please enter a Job Number.", "ejpt")); ?></span>');
+            console.log('Job number is missing.'); // DEBUG
             return;
         }
 
         var actionPage = $button.hasClass('ejpt-start-link-btn') ? 'ejpt_start_job' : 'ejpt_stop_job';
         var url = isAdminUrl + '?page=' + actionPage + '&job_number=' + encodeURIComponent(jobNumber) + '&phase_id=' + encodeURIComponent(phaseId);
+        console.log('Generated URL:', url); // DEBUG
         
-        // Display the link and make it clickable, or navigate directly
-        // For this version, let's display the link so admin can copy it for QR codes etc.
         var linkText = $button.hasClass('ejpt-start-link-btn') ? '<?php echo esc_js(__("Go to Start Form", "ejpt")); ?>' : '<?php echo esc_js(__("Go to Stop Form", "ejpt")); ?>';
         linkArea.html('<a href="' + url + '" target="_blank">' + linkText + ' (' + jobNumber + ')</a> <button class="button button-small ejpt-copy-link-btn" data-link="' + url + '"><?php echo esc_js(__("Copy")); ?></button>');
-        
-        // Navigate directly option (can be enabled instead of showing link):
-        // window.open(url, '_blank');
     });
 
-    $('body').on('click', '.ejpt-copy-link-btn', function(){
+    $('body').on('click', '.ejpt-copy-link-btn', function(){ 
+        console.log('Copy button clicked.'); // DEBUG
         var linkToCopy = $(this).data('link');
+        console.log('Link to copy:', linkToCopy); // DEBUG
         navigator.clipboard.writeText(linkToCopy).then(function() {
             showNotice('success', '<?php echo esc_js(__("Link copied to clipboard!", "ejpt")); ?>');
         }, function(err) {
