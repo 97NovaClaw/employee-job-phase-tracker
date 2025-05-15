@@ -70,16 +70,20 @@ global $employees, $phases;
         <?php 
         // --- DASHBOARD VIEW DEBUGGING ---
         if (defined('WP_DEBUG') && WP_DEBUG === true) {
-            ejpt_log('Dashboard View: $phases variable content just before '!empty()' check:', 'dashboard-view');
-            ejpt_log($phases, 'dashboard-view-phases-var');
-            ejpt_log('Dashboard View: Result of empty($phases) is: ' . (empty($phases) ? 'true (empty)' : 'false (not empty)'), 'dashboard-view');
-            ejpt_log('Dashboard View: Result of count($phases) is: ' . count((array)$phases), 'dashboard-view');
+            ejpt_log('Dashboard View (DEBUG): $phases content just before conditional check:', 'dashboard-view');
+            ejpt_log($phases, 'dashboard-view-phases-var (DEBUG)');
+            ejpt_log('Dashboard View (DEBUG): empty($phases) result: ' . (empty($phases) ? 'true (is empty)' : 'false (not empty)'), 'dashboard-view');
+            if (is_array($phases)) {
+                 ejpt_log('Dashboard View (DEBUG): count($phases) result: ' . count($phases), 'dashboard-view');
+            } else {
+                 ejpt_log('Dashboard View (DEBUG): $phases is not an array, count not applicable directly.', 'dashboard-view');
+            }
         }
         // --- END DASHBOARD VIEW DEBUGGING ---
+        ?>
         <?php 
         $phases_is_not_empty = !empty($phases);
         $phases_is_an_array = is_array($phases);
-        // Only count if it's an array to avoid errors if $phases is not an array but also not technically empty (e.g. non-empty string)
         $phases_has_items = ($phases_is_an_array && count($phases) > 0);
 
         if ( $phases_is_not_empty && $phases_has_items ) : 
