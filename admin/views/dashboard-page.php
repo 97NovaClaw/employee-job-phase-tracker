@@ -355,30 +355,43 @@ jQuery(document).ready(function($) {
 
     // Handle click on "Edit" button in DataTable
     $('#ejpt-dashboard-table tbody').on('click', '.ejpt-edit-log-button', function () {
+        console.log('Dashboard JS: Edit button event triggered.'); // DEBUG Line 1
         var logId = $(this).data('log-id');
-        ejpt_log('Edit button clicked for log ID: ' + logId, 'Dashboard JS');
+        // ejpt_log('Edit button clicked for log ID: ' + logId, 'Dashboard JS'); // Server-side log via separate mechanism if needed
+        console.log('Dashboard JS: Edit button clicked for log ID:', logId); // DEBUG Line 2
+
+        if (!logId) {
+            console.error('Dashboard JS: Log ID is missing from button data attribute.');
+            showNotice('error', '<?php echo esc_js(__("Error: Log ID is missing.", "ejpt")); ?>');
+            return;
+        }
+
+        // Disable button to prevent multiple clicks
+        $(this).prop('disabled', true).text('<?php echo esc_js(__("Loading...", "ejpt")); ?>');
+        var $clickedButton = $(this);
 
         $.ajax({
             url: ejpt_ajax.ajax_url,
             type: 'POST',
             data: {
                 action: 'ejpt_get_job_log_details',
-                nonce: '<?php echo wp_create_nonce("ejpt_edit_log_nonce"); ?>', // Matches the nonce in ajax_get_job_log_details
+                nonce: '<?php echo wp_create_nonce("ejpt_edit_log_nonce"); ?>',
                 log_id: logId
             },
             dataType: 'json',
             success: function(response) {
+                console.log('Dashboard JS: AJAX success for get_job_log_details. Response:', response); // DEBUG Line 3
                 if (response.success) {
-                    ejpt_log('Successfully fetched log details: ', response.data);
+                    ejpt_log('Successfully fetched log details: ', response.data); // Keep this server-side log for details
                     var log = response.data;
                     editLogForm.find('#edit_log_id').val(log.log_id);
                     editLogForm.find('#edit_log_employee_id').val(log.employee_id);
                     editLogForm.find('#edit_log_job_number').val(log.job_number);
                     editLogForm.find('#edit_log_phase_id').val(log.phase_id);
-                    editLogForm.find('#edit_log_start_time').val(log.start_time); // Assumes YYYY-MM-DDTHH:MM format
-                    editLogForm.find('#edit_log_end_time').val(log.end_time);     // Assumes YYYY-MM-DDTHH:MM format
-                    editLogForm.find('#edit_log_boxes_completed').val(log.boxes_completed || 0);
-                    editLogForm.find('#edit_log_items_completed').val(log.items_completed || 0);
+                    editLogForm.find('#edit_log_start_time').val(log.start_time); 
+                    editLogForm.find('#edit_log_end_time').val(log.end_time);     
+                    editLogForm.find('#edit_log_boxes_completed').val(log.boxes_completed !== null ? log.boxes_completed : 0);
+                    editLogForm.find('#edit_log_items_completed').val(log.items_completed !== null ? log.items_completed : 0);
                     editLogForm.find('#edit_log_status').val(log.status);
                     editLogForm.find('#edit_log_notes').val(log.notes);
                     editLogModal.show();
@@ -386,10 +399,13 @@ jQuery(document).ready(function($) {
                     showNotice('error', response.data.message || '<?php echo esc_js(__("Could not fetch log details.", "ejpt")); ?>');
                     ejpt_log('Error fetching log details: ', response.data);
                 }
+                $clickedButton.prop('disabled', false).text('<?php echo esc_js(__("Edit", "ejpt")); ?>'); // Re-enable button
             },
             error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Dashboard JS: AJAX error for get_job_log_details:', textStatus, errorThrown, jqXHR.responseText); // DEBUG Line 4
                 showNotice('error', '<?php echo esc_js(__("AJAX request failed: ", "ejpt")); ?>' + textStatus + ' - ' + errorThrown);
-                ejpt_log('AJAX error fetching log details: ' + textStatus + ' - ' + errorThrown, 'Dashboard JS');
+                ejpt_log('AJAX error fetching log details: ' + textStatus + ' - ' + errorThrown + ' | Response: ' + jqXHR.responseText, 'Dashboard JS');
+                $clickedButton.prop('disabled', false).text('<?php echo esc_js(__("Edit", "ejpt")); ?>'); // Re-enable button
             }
         });
     });
