@@ -425,10 +425,10 @@ jQuery(document).ready(function($) {
         var $submitButton = $form.find('input[type="submit"]');
         $submitButton.prop('disabled', true).val('<?php echo esc_js(__("Saving...", "ejpt")); ?>');
         
-        var formData = $form.serialize(); // Includes nonce if named ejpt_edit_log_nonce_field
-        formData += '&action=ejpt_update_job_log'; // Add action manually
+        var formData = $form.serialize(); 
+        formData += '&action=ejpt_update_job_log';
 
-        ejpt_log('Submitting Edit Log Form Data:', formData);
+        console.log('Dashboard JS: Submitting Edit Log Form Data:', formData); // DEBUG: Changed from ejpt_log
 
         $.post(ejpt_data.ajax_url, formData)
             .done(function(response) {
