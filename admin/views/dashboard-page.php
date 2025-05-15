@@ -111,8 +111,7 @@ global $employees, $phases;
     <table id="ejpt-dashboard-table" class="display wp-list-table widefat fixed striped" style="width:100%">
         <thead>
             <tr>
-                <th><?php esc_html_e('Employee', 'ejpt'); ?></th>
-                <th><?php esc_html_e('Emp. No.', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Employee Name', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Job No.', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Phase', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Start Time', 'ejpt'); ?></th>
@@ -133,8 +132,7 @@ global $employees, $phases;
         </tbody>
          <tfoot>
             <tr>
-                <th><?php esc_html_e('Employee', 'ejpt'); ?></th>
-                <th><?php esc_html_e('Emp. No.', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Employee Name', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Job No.', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Phase', 'ejpt'); ?></th>
                 <th><?php esc_html_e('Start Time', 'ejpt'); ?></th>
@@ -176,7 +174,6 @@ jQuery(document).ready(function($) {
         },
         columns: [
             { data: 'employee_name' },
-            { data: 'employee_number' },
             { data: 'job_number' },
             { data: 'phase_name' },
             { data: 'start_time' },
@@ -257,7 +254,7 @@ jQuery(document).ready(function($) {
             if (response.data && response.data.length > 0) {
                 var csvData = [];
                 var headers = [
-                    "Employee Name", "Employee No.", "Job No.", "Phase", 
+                    "Employee Name", "Job No.", "Phase", 
                     "Start Time", "End Time", "Duration", "Boxes Completed", "Items Completed",
                     "Time/Box", "Time/Item", "Boxes/Hr", "Items/Hr", "Status", "Notes"
                 ];
@@ -269,7 +266,6 @@ jQuery(document).ready(function($) {
 
                     var csvRow = [
                         '"' + row.employee_name.replace(/"/g, '""') + '"',
-                        '"' + row.employee_number.replace(/"/g, '""') + '"',
                         '"' + row.job_number.replace(/"/g, '""') + '"',
                         '"' + row.phase_name.replace(/"/g, '""') + '"',
                         '"' + row.start_time.replace(/"/g, '""') + '"',

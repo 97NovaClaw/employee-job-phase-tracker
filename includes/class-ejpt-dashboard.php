@@ -178,7 +178,7 @@ class EJPT_Dashboard {
 
             $data[] = array(
                 'employee_name'    => $employee_name,
-                'employee_number'  => esc_html($log->employee_number),
+                // 'employee_number'  => esc_html($log->employee_number), // Removed as per request
                 'job_number'       => esc_html($log->job_number),
                 'phase_name'       => esc_html($log->phase_name),
                 'start_time'       => esc_html(wp_date(get_option('date_format') . ' ' . get_option('time_format'), strtotime($log->start_time))),
