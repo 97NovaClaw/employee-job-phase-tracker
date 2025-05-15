@@ -74,8 +74,8 @@ class EJPT_Dashboard {
      * Handle AJAX request for dashboard data.
      */
     public static function ajax_get_dashboard_data() {
-        ejpt_log('AJAX: Attempting to get dashboard data.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_dashboard_nonce', 'nonce');
 
         if (!current_user_can(ejpt_get_capability())) {
@@ -142,14 +142,14 @@ class EJPT_Dashboard {
             'date_to'        => $filter_date_to,
             'status'         => $filter_status,
         );
-        ejpt_log('Dashboard data query args: ', $args);
+        ejpt_log($args, 'Dashboard data query args: ');
 
         $logs = EJPT_DB::get_job_logs($args);
         $total_records_args = array_intersect_key($args, array_flip(['search_general', 'employee_id', 'job_number', 'phase_id', 'date_from', 'date_to', 'status']));
         $total_filtered_records = EJPT_DB::get_job_logs_count($total_records_args);
         $total_records = EJPT_DB::get_job_logs_count(); 
 
-        ejpt_log('Dashboard data counts: Total=' . $total_records . ', Filtered=' . $total_filtered_records . ', Fetched for page=' . count($logs), __METHOD__);
+        ejpt_log('Dashboard data counts: Total=' . $total_records . ', Filtered=' . $total_filtered_records . ', Fetched for page=' . count($logs), 'Results for ' . __METHOD__);
 
         $data = array();
         foreach ($logs as $log) {
@@ -195,7 +195,7 @@ class EJPT_Dashboard {
             );
         }
 
-        ejpt_log('Sending dashboard data to DataTables. Draw: ' . $draw . ', Records: ' . count($data), __METHOD__);
+        ejpt_log('Sending dashboard data to DataTables. Draw: ' . $draw . ', Records: ' . count($data), 'Response for ' . __METHOD__);
         wp_send_json(array(
             'draw'            => $draw,
             'recordsTotal'    => $total_records,

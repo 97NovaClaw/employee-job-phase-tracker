@@ -96,8 +96,8 @@ class EJPT_Admin_Pages {
      * Handle the submission of the "Start Job Phase" form.
      */
     public static function handle_start_job_form() {
-        ejpt_log('AJAX: Attempting to handle start job form.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_start_job_nonce', 'ejpt_start_job_nonce');
 
         if (!current_user_can(ejpt_get_form_access_capability())) { 
@@ -146,8 +146,8 @@ class EJPT_Admin_Pages {
      * Handle the submission of the "Stop Job Phase" form.
      */
     public static function handle_stop_job_form() {
-        ejpt_log('AJAX: Attempting to handle stop job form.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_stop_job_nonce', 'ejpt_stop_job_nonce');
 
         if (!current_user_can(ejpt_get_form_access_capability())) { 

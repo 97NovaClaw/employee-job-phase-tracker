@@ -63,8 +63,8 @@ class EJPT_Employee {
      * Handle AJAX request to add an employee.
      */
     public static function ajax_add_employee() {
-        ejpt_log('AJAX: Attempting to add employee.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
 
         check_ajax_referer('ejpt_add_employee_nonce', 'ejpt_add_employee_nonce');
 
@@ -99,8 +99,8 @@ class EJPT_Employee {
      * Handle AJAX request to get an employee's details for editing.
      */
     public static function ajax_get_employee() {
-        ejpt_log('AJAX: Attempting to get employee.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_edit_employee_nonce', '_ajax_nonce_get_employee'); 
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
@@ -132,8 +132,8 @@ class EJPT_Employee {
      * Handle AJAX request to update an employee.
      */
     public static function ajax_update_employee() {
-        ejpt_log('AJAX: Attempting to update employee.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_edit_employee_nonce', 'ejpt_edit_employee_nonce');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
@@ -168,8 +168,8 @@ class EJPT_Employee {
      * Handle AJAX request to toggle employee active status.
      */
     public static function ajax_toggle_employee_status() {
-        ejpt_log('AJAX: Attempting to toggle employee status.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_toggle_status_nonce', '_ajax_nonce'); 
 
         if ( ! current_user_can( ejpt_get_capability() ) ) {

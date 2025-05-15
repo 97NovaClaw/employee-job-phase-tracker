@@ -62,8 +62,8 @@ class EJPT_Phase {
      * Handle AJAX request to add a phase.
      */
     public static function ajax_add_phase() {
-        ejpt_log('AJAX: Attempting to add phase.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_add_phase_nonce', 'ejpt_add_phase_nonce');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
@@ -96,8 +96,8 @@ class EJPT_Phase {
      * Handle AJAX request to get a phase's details for editing.
      */
     public static function ajax_get_phase() {
-        ejpt_log('AJAX: Attempting to get phase.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_edit_phase_nonce', '_ajax_nonce_get_phase');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) {
@@ -129,8 +129,8 @@ class EJPT_Phase {
      * Handle AJAX request to update a phase.
      */
     public static function ajax_update_phase() {
-        ejpt_log('AJAX: Attempting to update phase.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_edit_phase_nonce', 'ejpt_edit_phase_nonce');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
@@ -164,8 +164,8 @@ class EJPT_Phase {
      * Handle AJAX request to toggle phase active status.
      */
     public static function ajax_toggle_phase_status() {
-        ejpt_log('AJAX: Attempting to toggle phase status.', __METHOD__);
-        ejpt_log('POST data: ', $_POST);
+        ejpt_log('AJAX call received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
         check_ajax_referer('ejpt_toggle_status_nonce', '_ajax_nonce');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
