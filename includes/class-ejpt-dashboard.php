@@ -244,7 +244,7 @@ class EJPT_Dashboard {
      * Handle AJAX request to update a job log entry.
      */
     public static function ajax_update_job_log() {
-        check_ajax_referer('ejpt_edit_log_nonce_field', 'ejpt_edit_log_nonce_field');
+        check_ajax_referer('ejpt_edit_log_nonce', 'ejpt_edit_log_nonce_field');
         ejpt_log('AJAX: Update job log', __METHOD__);
         ejpt_log($_POST, 'POST data for ' . __METHOD__);
 
