@@ -75,12 +75,6 @@ global $employees, $total_employees, $current_page, $per_page, $search_term, $ac
             </thead>
             <tbody id="the-list">
                 <?php 
-                // --- VIEW FILE DEBUGGING ---
-                if (defined('WP_DEBUG') && WP_DEBUG === true) {
-                    echo '<tr><td colspan="5"><pre>Employee Management View Debug: Employees Data: '; var_dump($employees); echo '</pre></td></tr>';
-                    echo '<tr><td colspan="5"><pre>Employee Management View Debug: Total Employees: '; var_dump($total_employees); echo '</pre></td></tr>';
-                }
-                // --- END VIEW FILE DEBUGGING ---
                 if ( ! empty( $employees ) ) : ?>
                     <?php foreach ( $employees as $employee ) : ?>
                         <tr id="employee-<?php echo $employee->employee_id; ?>" class="<?php echo $employee->is_active ? 'active' : 'inactive'; ?>">

@@ -19,6 +19,8 @@ class EJPT_Phase {
             wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
         }
 
+        global $phases, $total_phases, $current_page, $per_page, $search_term, $active_filter;
+
         $search_term = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
         $active_filter = isset($_REQUEST['status_filter']) ? sanitize_text_field($_REQUEST['status_filter']) : 'all';
 
@@ -48,9 +50,6 @@ class EJPT_Phase {
         $phases = EJPT_DB::get_phases( $phase_args );
         $total_phases = EJPT_DB::get_phases_count(array('search' => $search_term, 'is_active' => ($active_filter === 'all' ? null : ($active_filter === 'active' ? 1 : 0)) ));
         
-        // Make variables available to the view
-        global $phases, $total_phases, $current_page, $per_page, $search_term, $active_filter;
-
         include_once EJPT_PLUGIN_DIR . 'admin/views/phase-management-page.php';
     }
 

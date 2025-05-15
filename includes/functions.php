@@ -81,18 +81,61 @@ function ejpt_get_form_access_capability() {
  * @param string $context Optional context for the log entry (e.g., function name).
  */
 function ejpt_log($message, $context = '') {
-    if (defined('WP_DEBUG') && WP_DEBUG === true) {
-        $log_entry = '[EJPT_DEBUG';
-        if (!empty($context)) {
-            $log_entry .= ' - ' . $context;
-        }
-        $log_entry .= ']: ';
-
-        if (is_array($message) || is_object($message)) {
-            $log_entry .= print_r($message, true);
-        } else {
-            $log_entry .= $message;
-        }
-        error_log($log_entry);
+    if (!(defined('WP_DEBUG') && WP_DEBUG === true)) {
+        return; // Do nothing if WP_DEBUG is not enabled
     }
+
+    $log_entry_prefix = '[' . wp_date('Y-m-d H:i:s e') . '] [EJPT_DEBUG';
+    if (!empty($context) && is_string($context)) {
+        $log_entry_prefix .= ' - ' . $context;
+    } elseif (!empty($context)) {
+        $log_entry_prefix .= ' - ' . print_r($context, true);
+    }
+    $log_entry_prefix .= ']: ';
+
+    $message_output = '';
+    if (is_wp_error($message)){
+        $message_output = 'WP_Error: ' . $message->get_error_code() . ' - ' . $message->get_error_message();
+        if (!empty($message->get_error_data())) {
+            $message_output .= "\nError Data: " . print_r($message->get_error_data(), true);
+        }
+    } elseif (is_array($message) || is_object($message)) {
+        $json_encoded = json_encode($message, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if ($json_encoded === false && json_last_error() !== JSON_ERROR_NONE) {
+            $message_output = print_r($message, true);
+        } else {
+            $message_output = $json_encoded;
+        }
+    } else {
+        $message_output = (string) $message;
+    }
+
+    $log_entry = $log_entry_prefix . $message_output . "\n";
+
+    $log_dir = EJPT_PLUGIN_DIR . 'debug';
+    $log_file = $log_dir . '/debug.log';
+
+    if (!file_exists($log_dir)) {
+        // Try to create the directory
+        // Add @ to suppress errors if it fails, we'll fall back to error_log
+        @mkdir($log_dir, 0755);
+        // Add .htaccess to prevent direct browsing if directory was created
+        if (file_exists($log_dir)) {
+            $htaccess_content = "# Apache deny access to this directory\n<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Deny from all\n</IfModule>";
+            @file_put_contents($log_dir . '/.htaccess', $htaccess_content);
+            @file_put_contents($log_dir . '/.gitkeep', ''); // For git
+        }
+    }
+
+    // Attempt to write to the custom log file
+    if (is_dir($log_dir) && is_writable($log_dir)) {
+        // Add @ to suppress errors if file_put_contents fails
+        if (@file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX) !== false) {
+            return; // Successfully wrote to custom log
+        }
+    }
+
+    // Fallback: Use the standard PHP error_log if custom log fails or is not writable
+    // This will go to wp-content/debug.log if WP_DEBUG_LOG is true, or the server error log.
+    error_log(trim($log_entry)); // Trim to remove trailing newline that error_log might add
 } 

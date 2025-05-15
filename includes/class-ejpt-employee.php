@@ -20,15 +20,18 @@ class EJPT_Employee {
             wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
         }
 
-        // Handle search
+        // Declare globals needed by the view or for this method's logic that persists to the view
+        global $employees, $total_employees, $current_page, $per_page, $search_term, $active_filter;
+
+        // Handle search & pagination parameters
         $search_term = isset($_REQUEST['s']) ? sanitize_text_field($_REQUEST['s']) : '';
         $active_filter = isset($_REQUEST['status_filter']) ? sanitize_text_field($_REQUEST['status_filter']) : 'all';
-
-        // Data for the table
         $per_page = 20;
         $current_page = isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1;
         $offset = ( $current_page - 1 ) * $per_page;
         
+        // Order by parameters for the query
+        // These are also set into $GLOBALS for access in the view table header generation (WordPress list table style)
         $GLOBALS['orderby'] = isset($_GET['orderby']) ? sanitize_key($_GET['orderby']) : 'last_name';
         $GLOBALS['order'] = isset($_GET['order']) ? strtoupper(sanitize_key($_GET['order'])) : 'ASC';
         if(!in_array(strtolower($GLOBALS['order']), ['asc', 'desc'])) {
@@ -48,6 +51,7 @@ class EJPT_Employee {
             $employee_args['is_active'] = 0;
         }
 
+        // Assign fetched data to the global variables
         $employees = EJPT_DB::get_employees( $employee_args );
         $total_employees = EJPT_DB::get_employees_count(array('search' => $search_term, 'is_active' => ($active_filter === 'all' ? null : ($active_filter === 'active' ? 1 : 0)) ));
 
@@ -55,10 +59,8 @@ class EJPT_Employee {
         // echo '<pre>Debugging Employees Data:</pre>'; var_dump($employees); die(); // This line is now commented out
         // --- END TEMPORARY DEBUGGING ---
 
-        // Make variables available to the view
-        global $employees, $total_employees, $current_page, $per_page, $search_term, $active_filter;
-
         // Include the view file
+        // The view file uses: $employees, $total_employees, $current_page, $per_page, $search_term, $active_filter, and $GLOBALS['orderby'], $GLOBALS['order']
         include_once EJPT_PLUGIN_DIR . 'admin/views/employee-management-page.php';
     }
 
