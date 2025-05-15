@@ -254,10 +254,10 @@ jQuery(document).ready(function($) {
                 link.click();
                 document.body.removeChild(link);
             } else {
-                showNotice('warning', '<?php esc_js_e("No data to export based on current filters or an error occurred.", "ejpt"); ?>');
+                showNotice('warning', '<?php echo esc_js(__("No data to export based on current filters or an error occurred.", "ejpt")); ?>');
             }
         }).fail(function() {
-            showNotice('error', '<?php esc_js_e("Failed to fetch data for CSV export.", "ejpt"); ?>');
+            showNotice('error', '<?php echo esc_js(__("Failed to fetch data for CSV export.", "ejpt")); ?>');
         });
     });
 });

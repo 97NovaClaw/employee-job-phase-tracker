@@ -52,7 +52,7 @@ class EJPT_Employee {
         $total_employees = EJPT_DB::get_employees_count(array('search' => $search_term, 'is_active' => ($active_filter === 'all' ? null : ($active_filter === 'active' ? 1 : 0)) ));
 
         // --- TEMPORARY DEBUGGING --- 
-        echo '<pre>Debugging Employees Data:</pre>'; var_dump($employees); die(); 
+        // echo '<pre>Debugging Employees Data:</pre>'; var_dump($employees); die(); // This line is now commented out
         // --- END TEMPORARY DEBUGGING ---
 
         // Make variables available to the view

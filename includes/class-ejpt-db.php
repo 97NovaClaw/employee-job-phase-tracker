@@ -183,34 +183,48 @@ class EJPT_DB {
         self::init();
         global $wpdb;
         $defaults = array(
-            'is_active' => null, // null for all, 1 for active, 0 for inactive
+            'is_active' => null, 
             'orderby'   => 'last_name',
             'order'     => 'ASC',
             'search'    => '',
-            'number'    => -1, // -1 for all
+            'number'    => -1, 
             'offset'    => 0
         );
         $args = wp_parse_args($args, $defaults);
 
         $sql = "SELECT * FROM " . self::$employees_table;
         $where_clauses = array();
+        $query_params = array();
 
         if ( !is_null($args['is_active']) ) {
-            $where_clauses[] = $wpdb->prepare("is_active = %d", $args['is_active']);
+            $where_clauses[] = "is_active = %d";
+            $query_params[] = $args['is_active'];
         }
         if ( !empty($args['search']) ) {
             $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where_clauses[] = $wpdb->prepare("(employee_number LIKE %s OR first_name LIKE %s OR last_name LIKE %s)", $search_term, $search_term, $search_term);
+            $where_clauses[] = "(employee_number LIKE %s OR first_name LIKE %s OR last_name LIKE %s)";
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
         }
 
         if ( !empty($where_clauses) ) {
             $sql .= " WHERE " . implode(" AND ", $where_clauses);
         }
 
-        $sql .= $wpdb->prepare(" ORDER BY " . sanitize_sql_orderby($args['orderby'] . " " . $args['order']));
+        if (!empty($query_params)){
+            $sql = $wpdb->prepare($sql, $query_params);
+        }
+        
+        // Sanitize orderby and order
+        $orderby = sanitize_sql_orderby($args['orderby']);
+        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+        if ($orderby) { // Only add if orderby is valid
+            $sql .= " ORDER BY $orderby $order";
+        }
 
         if ( $args['number'] > 0 ) {
-            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", $args['number'], $args['offset']);
+            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
         
         return $wpdb->get_results( $sql );
@@ -336,7 +350,7 @@ class EJPT_DB {
         self::init();
         global $wpdb;
         $defaults = array(
-            'is_active' => null, // null for all, 1 for active, 0 for inactive
+            'is_active' => null, 
             'orderby'   => 'phase_name',
             'order'     => 'ASC',
             'search'    => '',
@@ -347,23 +361,35 @@ class EJPT_DB {
 
         $sql = "SELECT * FROM " . self::$phases_table;
         $where_clauses = array();
+        $query_params = array();
 
         if ( !is_null($args['is_active']) ) {
-            $where_clauses[] = $wpdb->prepare("is_active = %d", $args['is_active']);
+            $where_clauses[] = "is_active = %d";
+            $query_params[] = $args['is_active'];
         }
         if ( !empty($args['search']) ) {
             $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where_clauses[] = $wpdb->prepare("phase_name LIKE %s OR phase_description LIKE %s", $search_term, $search_term);
+            $where_clauses[] = "(phase_name LIKE %s OR phase_description LIKE %s)";
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
         }
 
         if ( !empty($where_clauses) ) {
             $sql .= " WHERE " . implode(" AND ", $where_clauses);
         }
+        
+        if (!empty($query_params)){
+            $sql = $wpdb->prepare($sql, $query_params);
+        }
 
-        $sql .= $wpdb->prepare(" ORDER BY " . sanitize_sql_orderby($args['orderby'] . " " . $args['order']));
+        $orderby = sanitize_sql_orderby($args['orderby']);
+        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+        if ($orderby) {
+            $sql .= " ORDER BY $orderby $order";
+        }
 
         if ( $args['number'] > 0 ) {
-            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", $args['number'], $args['offset']);
+            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
 
         return $wpdb->get_results( $sql );
@@ -503,65 +529,89 @@ class EJPT_DB {
             'status'        => null,
             'orderby'       => 'jl.start_time',
             'order'         => 'DESC',
-            'number'        => 25, // Default per page for dashboard
+            'number'        => 25, 
             'offset'        => 0,
-            'search_general' => '' // General search term for job number, employee name, etc.
+            'search_general' => '' 
         );
         $args = wp_parse_args($args, $defaults);
 
-        $sql = "SELECT jl.*, e.first_name, e.last_name, e.employee_number, p.phase_name 
-                FROM " . self::$job_logs_table . " jl
-                LEFT JOIN " . self::$employees_table . " e ON jl.employee_id = e.employee_id
-                LEFT JOIN " . self::$phases_table . " p ON jl.phase_id = p.phase_id";
+        $sql_select = "SELECT jl.*, e.first_name, e.last_name, e.employee_number, p.phase_name";
+        $sql_from = " FROM " . self::$job_logs_table . " jl
+                     LEFT JOIN " . self::$employees_table . " e ON jl.employee_id = e.employee_id
+                     LEFT JOIN " . self::$phases_table . " p ON jl.phase_id = p.phase_id";
         
+        $sql = $sql_select . $sql_from;
         $where_clauses = array();
+        $query_params = array();
 
         if ( !empty($args['employee_id']) ) {
-            $where_clauses[] = $wpdb->prepare("jl.employee_id = %d", $args['employee_id']);
+            $where_clauses[] = "jl.employee_id = %d";
+            $query_params[] = $args['employee_id'];
         }
         if ( !empty($args['job_number']) ) {
-            $where_clauses[] = $wpdb->prepare("jl.job_number = %s", sanitize_text_field($args['job_number']));
+            $where_clauses[] = "jl.job_number = %s";
+            $query_params[] = sanitize_text_field($args['job_number']);
         }
         if ( !empty($args['phase_id']) ) {
-            $where_clauses[] = $wpdb->prepare("jl.phase_id = %d", $args['phase_id']);
+            $where_clauses[] = "jl.phase_id = %d";
+            $query_params[] = $args['phase_id'];
         }
         if ( !empty($args['date_from']) ) {
-            $where_clauses[] = $wpdb->prepare("jl.start_time >= %s", sanitize_text_field($args['date_from']) . ' 00:00:00');
+            $where_clauses[] = "jl.start_time >= %s";
+            $query_params[] = sanitize_text_field($args['date_from']) . ' 00:00:00';
         }
         if ( !empty($args['date_to']) ) {
-            // Query should find logs where start_time is before or on date_to
-            // OR if end_time is set, it should be on or after date_from and on or before date_to.
-            // This logic aims to include logs that were active during the specified period.
             $date_to_end_of_day = sanitize_text_field($args['date_to']) . ' 23:59:59';
             if (!empty($args['date_from'])) {
                  $date_from_start_of_day = sanitize_text_field($args['date_from']) . ' 00:00:00';
-                 $where_clauses[] = $wpdb->prepare("( (jl.start_time <= %s AND (jl.end_time IS NULL OR jl.end_time >= %s)) OR (jl.start_time >= %s AND jl.start_time <= %s) )", 
-                                                $date_to_end_of_day, $date_from_start_of_day, $date_from_start_of_day, $date_to_end_of_day);
+                 $where_clauses[] = "( (jl.start_time <= %s AND (jl.end_time IS NULL OR jl.end_time >= %s)) OR (jl.start_time >= %s AND jl.start_time <= %s) )"; 
+                 $query_params[] = $date_to_end_of_day;
+                 $query_params[] = $date_from_start_of_day;
+                 $query_params[] = $date_from_start_of_day;
+                 $query_params[] = $date_to_end_of_day;
             } else {
-                $where_clauses[] = $wpdb->prepare("jl.start_time <= %s", $date_to_end_of_day);
+                $where_clauses[] = "jl.start_time <= %s";
+                $query_params[] = $date_to_end_of_day;
             }
         }
         if ( !empty($args['status']) ) {
-            $where_clauses[] = $wpdb->prepare("jl.status = %s", sanitize_text_field($args['status']));
+            $where_clauses[] = "jl.status = %s";
+            $query_params[] = sanitize_text_field($args['status']);
         }
         if ( !empty($args['search_general']) ) {
             $search_term = '%' . $wpdb->esc_like(sanitize_text_field($args['search_general'])) . '%';
-            $where_clauses[] = $wpdb->prepare("(jl.job_number LIKE %s OR e.first_name LIKE %s OR e.last_name LIKE %s OR e.employee_number LIKE %s OR p.phase_name LIKE %s OR jl.notes LIKE %s)", 
-                                            $search_term, $search_term, $search_term, $search_term, $search_term, $search_term);
+            $where_clauses[] = "(jl.job_number LIKE %s OR e.first_name LIKE %s OR e.last_name LIKE %s OR e.employee_number LIKE %s OR p.phase_name LIKE %s OR jl.notes LIKE %s)";
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
+            $query_params[] = $search_term;
         }
 
         if ( !empty($where_clauses) ) {
             $sql .= " WHERE " . implode(" AND ", $where_clauses);
         }
 
-        // Sanitize orderby to prevent SQL injection
-        $allowed_orderby = array('jl.start_time', 'jl.end_time', 'e.last_name', 'e.first_name', 'e.employee_number', 'jl.job_number', 'p.phase_name', 'jl.status', 'jl.boxes_completed', 'jl.items_completed');
-        $orderby = in_array($args['orderby'], $allowed_orderby) ? $args['orderby'] : 'jl.start_time'; 
-        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+        if (!empty($query_params)){
+            $sql = $wpdb->prepare($sql, $query_params);
+        }
 
-        $sql .= " ORDER BY $orderby $order";
+        $allowed_orderby = array('jl.start_time', 'jl.end_time', 'e.last_name', 'e.first_name', 'e.employee_number', 'jl.job_number', 'p.phase_name', 'jl.status', 'jl.boxes_completed', 'jl.items_completed');
+        $orderby_input = $args['orderby'];
+        // Handle combined sorting for employee name
+        if ($orderby_input === 'e.last_name' || $orderby_input === 'e.first_name') {
+            $orderby = 'e.last_name ' . ($args['order'] === 'ASC' ? 'ASC' : 'DESC') . ', e.first_name';
+        } else {
+            $orderby = in_array($orderby_input, $allowed_orderby) ? $orderby_input : 'jl.start_time';
+        }
+        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+        // Only append $order if not already part of $orderby (for combined sort case)
+        $sql .= " ORDER BY $orderby " . ((strpos($orderby, 'ASC') === false && strpos($orderby, 'DESC') === false) ? $order : '');
+
 
         if ( isset($args['number']) && $args['number'] > 0 ) {
+            // This prepare is fine as it only deals with integers for LIMIT/OFFSET
             $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
 
