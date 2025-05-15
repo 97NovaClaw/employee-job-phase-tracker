@@ -76,7 +76,14 @@ global $employees, $phases;
             ejpt_log('Dashboard View: Result of count($phases) is: ' . count((array)$phases), 'dashboard-view');
         }
         // --- END DASHBOARD VIEW DEBUGGING ---
-        if ( !empty($phases) && is_array($phases) && count($phases) > 0 ) : ?>
+        <?php 
+        $phases_is_not_empty = !empty($phases);
+        $phases_is_an_array = is_array($phases);
+        // Only count if it's an array to avoid errors if $phases is not an array but also not technically empty (e.g. non-empty string)
+        $phases_has_items = ($phases_is_an_array && count($phases) > 0);
+
+        if ( $phases_is_not_empty && $phases_has_items ) : 
+        ?>
             <table class="form-table">
                 <?php foreach ($phases as $phase) : ?>
                     <tr valign="top" class="ejpt-phase-action-row">
