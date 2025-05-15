@@ -67,7 +67,16 @@ global $employees, $phases;
     <div id="ejpt-quick-actions" style="margin-bottom: 30px; padding: 15px; background-color: #fff; border: 1px solid #ccd0d4;">
         <h2><?php esc_html_e('Quick Phase Actions', 'ejpt'); ?></h2>
         <p><?php esc_html_e('Enter a Job Number and select a phase to generate Start/Stop links.', 'ejpt'); ?></p>
-        <?php if ( !empty($phases) ) : ?>
+        <?php 
+        // --- DASHBOARD VIEW DEBUGGING ---
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            ejpt_log('Dashboard View: $phases variable content just before '!empty()' check:', 'dashboard-view');
+            ejpt_log($phases, 'dashboard-view-phases-var');
+            ejpt_log('Dashboard View: Result of empty($phases) is: ' . (empty($phases) ? 'true (empty)' : 'false (not empty)'), 'dashboard-view');
+            ejpt_log('Dashboard View: Result of count($phases) is: ' . count((array)$phases), 'dashboard-view');
+        }
+        // --- END DASHBOARD VIEW DEBUGGING ---
+        if ( !empty($phases) && count((array)$phases) > 0 ) : ?>
             <table class="form-table">
                 <?php foreach ($phases as $phase) : ?>
                     <tr valign="top" class="ejpt-phase-action-row">
