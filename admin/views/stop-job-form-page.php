@@ -94,4 +94,49 @@ $form_disabled = empty( $job_number_get ) || !$phase_valid;
             <?php submit_button( __( 'Stop Job & Save', 'ejpt' ), 'primary', 'stop_job_submit', false, array('id'=>'stop-job-submit', 'disabled' => $form_disabled) ); ?>
         </div>
     </form>
-</div> 
+</div>
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    // Common function to display notices (if needed on this page specifically)
+    if (typeof window.showNotice !== 'function') {
+        window.showNotice = function(type, message) {
+            $('.ejpt-notice').remove();
+            var noticeHtml = '<div class="notice notice-' + type + ' is-dismissible ejpt-notice"><p>' + message + '</p>' +
+                             '<button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>';
+            $('div.wrap > h1').first().after(noticeHtml);
+            setTimeout(function() {
+                $('.ejpt-notice').fadeOut('slow', function() { $(this).remove(); });
+            }, 5000);
+            $('.ejpt-notice .notice-dismiss').on('click', function(event) {
+                event.preventDefault();
+                $(this).closest('.ejpt-notice').remove();
+            });
+        };
+    }
+
+    const stopJobButton = $('#stop-job-submit');
+    const employeeSelectStop = $('#employee_id_stop');
+    const phpFormDisabledStop = <?php echo json_encode($form_disabled); ?>;
+
+    function updateStopButtonState() {
+        if (phpFormDisabledStop) {
+            stopJobButton.prop('disabled', true);
+            console.log('Stop Job button disabled by PHP.');
+        } else if (employeeSelectStop.val() === '') {
+            stopJobButton.prop('disabled', true);
+            console.log('Stop Job button disabled (no employee selected).');
+        } else {
+            stopJobButton.prop('disabled', false);
+            console.log('Stop Job button enabled.');
+        }
+    }
+
+    // Initial state check
+    updateStopButtonState();
+
+    // Update button state when employee selection changes
+    employeeSelectStop.on('change', updateStopButtonState);
+
+    // AJAX submission is in admin-scripts.js
+});
+</script> 
