@@ -1,0 +1,213 @@
+/* Admin styles for Employee Job Phase Tracker */
+
+.wrap h1 {
+    margin-bottom: 20px;
+}
+
+/* Make plugin admin pages full width */
+.toplevel_page_ejpt_dashboard #wpcontent,
+.job-tracker_page_ejpt_employees #wpcontent,
+.job-tracker_page_ejpt_phases #wpcontent,
+.admin_page_ejpt_start_job #wpcontent, /* For hidden start page */
+.admin_page_ejpt_stop_job #wpcontent { /* For hidden stop page */
+    padding-left: 0;
+}
+
+.ejpt-form-table th {
+    width: 180px; /* Increased width for better readability */
+    padding: 10px;
+}
+.ejpt-form-table td {
+    padding: 10px;
+}
+
+.ejpt-form-table td input[type="text"],
+.ejpt-form-table td input[type="number"],
+.ejpt-form-table td select,
+.ejpt-form-table td textarea {
+    width: 100%;
+    max-width: 450px; /* Increased max-width */
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.ejpt-form-table td textarea {
+    height: 100px;
+}
+
+/* Notices */
+.ejpt-notice.notice-success,
+.notice.notice-success.ejpt-notice {
+    border-left-color: #4CAF50 !important; 
+}
+.ejpt-notice.notice-error,
+.notice.notice-error.ejpt-notice {
+    border-left-color: #F44336 !important;
+}
+.ejpt-notice p {
+    margin: 0.5em 0 !important;
+    padding: 2px !important;
+}
+
+
+/* Styles for DataTables */
+.dataTables_wrapper .dataTables_length, 
+.dataTables_wrapper .dataTables_filter, 
+.dataTables_wrapper .dataTables_info, 
+.dataTables_wrapper .dataTables_paginate {
+    margin-bottom: 15px;
+}
+
+#ejpt-dashboard-filters {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Increased gap */
+    align-items: flex-end; /* Align items to bottom for better look with labels on top */
+}
+
+#ejpt-dashboard-filters .filter-item {
+    display: flex;
+    flex-direction: column;
+}
+
+#ejpt-dashboard-filters label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+#ejpt-dashboard-filters input[type="date"],
+#ejpt-dashboard-filters input[type="text"],
+#ejpt-dashboard-filters select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-width: 180px; /* Minimum width for filter inputs */
+}
+#ejpt-dashboard-filters .button {
+    margin-left: 10px; /* Space for buttons */
+    height: 37px; /* Match input height */
+}
+
+.ejpt-readonly-field {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    display: inline-block;
+    min-width: 200px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.form-buttons {
+    margin-top: 25px;
+}
+
+/* Modal styles */
+.ejpt-modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1001; /* Higher z-index */
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.5); /* Darker overlay */
+}
+
+.ejpt-modal-content {
+    background-color: #fefefe;
+    margin: 8% auto; /* Adjusted margin for better centering */
+    padding: 25px;
+    border: 1px solid #bbb;
+    width: 90%;
+    max-width: 600px; /* Wider modal for forms */
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.ejpt-close-button {
+    color: #aaa;
+    float: right;
+    font-size: 32px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.ejpt-close-button:hover,
+.ejpt-close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.ejpt-modal h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+/* Action buttons styling */
+.button-secondary.ejpt-deactivate {
+    color: #dc3232; 
+    border-color: #dc3232;
+}
+.button-secondary.ejpt-deactivate:hover,
+.button-secondary.ejpt-deactivate:focus {
+    background: #dc3232;
+    color: #fff;
+    border-color: #dc3232;
+}
+.button-secondary.ejpt-activate {
+    color: #2271b1; 
+    border-color: #2271b1;
+}
+.button-secondary.ejpt-activate:hover,
+.button-secondary.ejpt-activate:focus {
+    background: #2271b1;
+    color: #fff;
+    border-color: #2271b1;
+}
+
+/* Table styling */
+.wp-list-table th .sorting-indicator::before {
+    font-size: 1.2em;
+}
+
+.wp-list-table td, .wp-list-table th {
+    padding: 10px 8px;
+}
+
+/* Responsive adjustments for DataTables */
+@media screen and (max-width: 782px) {
+    #ejpt-dashboard-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    #ejpt-dashboard-filters .filter-item {
+        width: 100%;
+    }
+    #ejpt-dashboard-filters input,
+    #ejpt-dashboard-filters select {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+    }
+    .dataTables_wrapper .dataTables_length, 
+    .dataTables_wrapper .dataTables_filter {
+        float: none;
+        text-align: left;
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        width: calc(100% - 60px);
+        margin-left: 0;
+    }
+} 

@@ -1,0 +1,264 @@
+<?php
+// /admin/views/dashboard-page.php
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly.
+}
+// Data for this page ($employees, $phases) is prepared in EJPT_Dashboard::display_dashboard_page()
+// and passed via global variables.
+global $employees, $phases; 
+?>
+<div class="wrap ejpt-dashboard-page">
+    <h1><?php esc_html_e( 'Job Logs Dashboard', 'ejpt' ); ?></h1>
+
+    <div id="ejpt-dashboard-filters">
+        <div class="filter-item">
+            <label for="filter_date_from"><?php esc_html_e('Date From:', 'ejpt');?></label>
+            <input type="text" id="filter_date_from" name="filter_date_from" class="ejpt-datepicker" placeholder="YYYY-MM-DD">
+        </div>
+        <div class="filter-item">
+            <label for="filter_date_to"><?php esc_html_e('Date To:', 'ejpt');?></label>
+            <input type="text" id="filter_date_to" name="filter_date_to" class="ejpt-datepicker" placeholder="YYYY-MM-DD">
+        </div>
+        <div class="filter-item">
+            <label for="filter_employee_id"><?php esc_html_e('Employee:', 'ejpt');?></label>
+            <select id="filter_employee_id" name="filter_employee_id">
+                <option value=""><?php esc_html_e('All Employees', 'ejpt');?></option>
+                <?php if (!empty($employees)): foreach ($employees as $employee): ?>
+                    <option value="<?php echo esc_attr($employee->employee_id); ?>">
+                        <?php echo esc_html($employee->first_name . ' ' . $employee->last_name . ' (' . $employee->employee_number . ')'); ?>
+                    </option>
+                <?php endforeach; endif; ?>
+            </select>
+        </div>
+        <div class="filter-item">
+            <label for="filter_job_number"><?php esc_html_e('Job Number:', 'ejpt');?></label>
+            <input type="text" id="filter_job_number" name="filter_job_number" placeholder="<?php esc_attr_e('Enter Job No.', 'ejpt'); ?>">
+        </div>
+        <div class="filter-item">
+            <label for="filter_phase_id"><?php esc_html_e('Phase:', 'ejpt');?></label>
+            <select id="filter_phase_id" name="filter_phase_id">
+                <option value=""><?php esc_html_e('All Phases', 'ejpt');?></option>
+                 <?php if (!empty($phases)): foreach ($phases as $phase): ?>
+                    <option value="<?php echo esc_attr($phase->phase_id); ?>">
+                        <?php echo esc_html($phase->phase_name); ?>
+                    </option>
+                <?php endforeach; endif; ?>
+            </select>
+        </div>
+        <div class="filter-item">
+            <label for="filter_status"><?php esc_html_e('Status:', 'ejpt');?></label>
+            <select id="filter_status" name="filter_status">
+                <option value=""><?php esc_html_e('All Statuses', 'ejpt');?></option>
+                <option value="started"><?php esc_html_e('Running', 'ejpt');?></option>
+                <option value="completed"><?php esc_html_e('Completed', 'ejpt');?></option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <button id="apply_filters_button" class="button button-primary"><?php esc_html_e('Apply Filters', 'ejpt');?></button>
+            <button id="clear_filters_button" class="button"><?php esc_html_e('Clear Filters', 'ejpt');?></button>
+        </div>
+    </div>
+    
+    <div id="ejpt-export-options" style="margin-bottom: 20px;">
+        <button id="export_csv_button" class="button"><?php esc_html_e('Export to CSV', 'ejpt');?></button>
+    </div>
+
+
+    <table id="ejpt-dashboard-table" class="display wp-list-table widefat fixed striped" style="width:100%">
+        <thead>
+            <tr>
+                <th><?php esc_html_e('Employee', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Emp. No.', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Job No.', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Phase', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Start Time', 'ejpt'); ?></th>
+                <th><?php esc_html_e('End Time', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Duration', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Boxes', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Items', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Time/Box', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Time/Item', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Boxes/Hr', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Items/Hr', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Status', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Notes', 'ejpt'); ?></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded by DataTables via AJAX -->
+        </tbody>
+         <tfoot>
+            <tr>
+                <th><?php esc_html_e('Employee', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Emp. No.', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Job No.', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Phase', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Start Time', 'ejpt'); ?></th>
+                <th><?php esc_html_e('End Time', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Duration', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Boxes', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Items', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Time/Box', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Time/Item', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Boxes/Hr', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Items/Hr', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Status', 'ejpt'); ?></th>
+                <th><?php esc_html_e('Notes', 'ejpt'); ?></th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    // Datepicker init is in admin-scripts.js
+
+    var dashboardTable = $('#ejpt-dashboard-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: ejpt_ajax.ajax_url,
+            type: 'POST',
+            data: function(d) { 
+                d.action = 'ejpt_get_dashboard_data';
+                d.nonce = '<?php echo wp_create_nonce("ejpt_dashboard_nonce"); ?>';
+                d.filter_employee_id = $('#filter_employee_id').val();
+                d.filter_job_number = $('#filter_job_number').val();
+                d.filter_phase_id = $('#filter_phase_id').val();
+                d.filter_date_from = $('#filter_date_from').val();
+                d.filter_date_to = $('#filter_date_to').val();
+                d.filter_status = $('#filter_status').val();
+            }
+        },
+        columns: [
+            { data: 'employee_name' },
+            { data: 'employee_number' },
+            { data: 'job_number' },
+            { data: 'phase_name' },
+            { data: 'start_time' },
+            { data: 'end_time' },
+            { data: 'duration', orderable: false }, 
+            { data: 'boxes_completed' },
+            { data: 'items_completed' },
+            { data: 'time_per_box', orderable: false },
+            { data: 'time_per_item', orderable: false },
+            { data: 'boxes_per_hour', orderable: false },
+            { data: 'items_per_hour', orderable: false },
+            { data: 'status' },
+            { data: 'notes', orderable: false, render: function(data, type, row) {
+                var escData = $('<div>').text(data).html(); 
+                if (type === 'display' && escData && escData.length > 50) {
+                    return '<span title="'+escData.replace(/"/g, '&quot;')+'">' + escData.substr(0, 50) + '...</span>';
+                }
+                return escData;
+              } 
+            }
+        ],
+        order: [[4, 'desc']], // Default order by start_time descending
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        responsive: true,
+        language: {
+            search: "<?php esc_attr_e('Search table:', 'ejpt'); ?>",
+            lengthMenu: "<?php esc_attr_e('Show _MENU_ entries', 'ejpt'); ?>",
+            info: "<?php esc_attr_e('Showing _START_ to _END_ of _TOTAL_ entries', 'ejpt'); ?>",
+            paginate: {
+                first: "<?php esc_attr_e('First', 'ejpt'); ?>",
+                last: "<?php esc_attr_e('Last', 'ejpt'); ?>",
+                next: "<?php esc_attr_e('Next', 'ejpt'); ?>",
+                previous: "<?php esc_attr_e('Previous', 'ejpt'); ?>"
+            }
+        }
+    });
+
+    // Apply filters button
+    $('#apply_filters_button').on('click', function() {
+        dashboardTable.ajax.reload(); 
+    });
+
+    // Clear filters button
+    $('#clear_filters_button').on('click', function() {
+        $('#ejpt-dashboard-filters input[type="text"]').val('');
+        $('#ejpt-dashboard-filters input[type="date"]').val('');
+        $('#ejpt-dashboard-filters select').val('');
+        dashboardTable.search('').columns().search('').draw();
+        // dashboardTable.ajax.reload(); // draw() above should trigger reload with cleared filters.
+    });
+    
+    // Export to CSV
+    $('#export_csv_button').on('click', function() {
+        var currentAjaxParams = dashboardTable.ajax.params();
+        var exportParams = $.extend({}, currentAjaxParams, {
+            length: -1, // Fetch all records for export
+            action: 'ejpt_get_dashboard_data', // Ensure action and nonce are correctly set for export
+            nonce: '<?php echo wp_create_nonce("ejpt_dashboard_nonce"); ?>'
+        });
+
+        // We need to add custom filters to the exportParams if they are not already part of currentAjaxParams.data
+        exportParams.filter_employee_id = $('#filter_employee_id').val();
+        exportParams.filter_job_number = $('#filter_job_number').val();
+        exportParams.filter_phase_id = $('#filter_phase_id').val();
+        exportParams.filter_date_from = $('#filter_date_from').val();
+        export_params.filter_date_to = $('#filter_date_to').val();
+        exportParams.filter_status = $('#filter_status').val();
+
+        // Remove DataTables specific parameters not needed for our AJAX handler or that might conflict
+        delete exportParams.draw;
+        delete exportParams.columns;
+        delete exportParams.order;
+        delete exportParams.start;
+        delete exportParams.search;
+
+        $.post(ejpt_ajax.ajax_url, exportParams, function(response) {
+            if (response.data && response.data.length > 0) {
+                var csvData = [];
+                var headers = [
+                    "Employee Name", "Employee No.", "Job No.", "Phase", 
+                    "Start Time", "End Time", "Duration", "Boxes Completed", "Items Completed",
+                    "Time/Box", "Time/Item", "Boxes/Hr", "Items/Hr", "Status", "Notes"
+                ];
+                csvData.push(headers.join(','));
+
+                response.data.forEach(function(row) {
+                    var statusText = $($.parseHTML(row.status)).text().trim(); // Strip HTML from status for CSV
+                    var notesText = row.notes ? row.notes.replace(/"/g, '""').replace(/\r\n|\n|\r/g, ' ') : '';
+
+                    var csvRow = [
+                        '"' + row.employee_name.replace(/"/g, '""') + '"',
+                        '"' + row.employee_number.replace(/"/g, '""') + '"',
+                        '"' + row.job_number.replace(/"/g, '""') + '"',
+                        '"' + row.phase_name.replace(/"/g, '""') + '"',
+                        '"' + row.start_time.replace(/"/g, '""') + '"',
+                        '"' + (row.end_time !== 'N/A' ? row.end_time.replace(/"/g, '""') : 'N/A') + '"',
+                        '"' + row.duration.replace(/"/g, '""') + '"',
+                        row.boxes_completed,
+                        row.items_completed,
+                        '"' + (row.time_per_box !== 'N/A' ? row.time_per_box.replace(/"/g, '""') : 'N/A') + '"', 
+                        '"' + (row.time_per_item !== 'N/A' ? row.time_per_item.replace(/"/g, '""') : 'N/A') + '"',
+                        row.boxes_per_hour,
+                        row.items_per_hour,
+                        '"' + statusText + '"',
+                        '"' + notesText + '"'
+                    ];
+                    csvData.push(csvRow.join(','));
+                });
+
+                var csvContent = csvData.join("\n");
+                var universalBOM = "\uFEFF"; // Universal BOM for UTF-8 for Excel
+                var encodedUri = encodeURI("data:text/csv;charset=utf-8," + universalBOM + csvContent);
+                var link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "job_logs_export_" + new Date().toISOString().slice(0,10) + ".csv");
+                document.body.appendChild(link); 
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                showNotice('warning', '<?php esc_js_e("No data to export based on current filters or an error occurred.", "ejpt"); ?>');
+            }
+        }).fail(function() {
+            showNotice('error', '<?php esc_js_e("Failed to fetch data for CSV export.", "ejpt"); ?>');
+        });
+    });
+});
+</script> 
