@@ -22,6 +22,7 @@ class EJPT_DB {
      * Create custom database tables.
      */
     public static function create_tables() {
+        ejpt_log('Attempting to create database tables...', __METHOD__);
         self::init();
         global $wpdb;
         $charset_collate = $wpdb->get_charset_collate();
@@ -75,24 +76,49 @@ class EJPT_DB {
         ) $charset_collate;";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-        dbDelta( $sql_employees );
-        dbDelta( $sql_phases );
-        dbDelta( $sql_job_logs );
+        ejpt_log('Running dbDelta for employees table.', __METHOD__);
+        $dbdelta_employees_result = dbDelta( $sql_employees );
+        ejpt_log('dbDelta employees result: ', __METHOD__);
+        ejpt_log($dbdelta_employees_result, __METHOD__);
+        
+        ejpt_log('Running dbDelta for phases table.', __METHOD__);
+        $dbdelta_phases_result = dbDelta( $sql_phases );
+        ejpt_log('dbDelta phases result: ', __METHOD__);
+        ejpt_log($dbdelta_phases_result, __METHOD__);
+
+        ejpt_log('Running dbDelta for job logs table.', __METHOD__);
+        $dbdelta_job_logs_result = dbDelta( $sql_job_logs );
+        ejpt_log('dbDelta job logs result: ', __METHOD__);
+        ejpt_log($dbdelta_job_logs_result, __METHOD__);
+        ejpt_log('Finished creating database tables.', __METHOD__);
     }
 
     // --- Employee CRUD Methods ---
     public static function add_employee( $employee_number, $first_name, $last_name ) {
+        ejpt_log('Attempting to add employee.', __METHOD__);
+        ejpt_log(array(
+            'employee_number' => $employee_number,
+            'first_name' => $first_name,
+            'last_name' => $last_name
+        ), __METHOD__);
+
         self::init();
         global $wpdb;
         
         if (empty($employee_number) || empty($first_name) || empty($last_name)) {
-            return new WP_Error('missing_fields', 'All fields (Employee Number, First Name, Last Name) are required.');
+            $error = new WP_Error('missing_fields', 'All fields (Employee Number, First Name, Last Name) are required.');
+            ejpt_log('Error adding employee: Missing fields.', __METHOD__);
+            ejpt_log($error, __METHOD__);
+            return $error;
         }
 
         // Check if employee number already exists
         $exists = $wpdb->get_var( $wpdb->prepare("SELECT employee_id FROM " . self::$employees_table . " WHERE employee_number = %s", $employee_number) );
         if ($exists) {
-            return new WP_Error('employee_exists', 'Employee number already exists.');
+            $error = new WP_Error('employee_exists', 'Employee number already exists.');
+            ejpt_log('Error adding employee: Employee number exists.', __METHOD__);
+            ejpt_log($error, __METHOD__);
+            return $error;
         }
 
         $result = $wpdb->insert(
@@ -106,9 +132,15 @@ class EJPT_DB {
             ),
             array('%s', '%s', '%s', '%d', '%s')
         );
+
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not add employee. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not add employee. Error: ' . $wpdb->last_error);
+            ejpt_log('Error adding employee: DB insert failed.', __METHOD__);
+            ejpt_log($error, __METHOD__);
+            ejpt_log('WPDB Last Error: ' . $wpdb->last_error, __METHOD__);
+            return $error;
         }
+        ejpt_log('Employee added successfully. ID: ' . $wpdb->insert_id, __METHOD__);
         return $wpdb->insert_id;
     }
 
@@ -119,23 +151,31 @@ class EJPT_DB {
     }
     
     public static function get_employee_by_number( $employee_number ) {
+        ejpt_log('Attempting to get employee by number: ' . $employee_number, __METHOD__);
         self::init();
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::$employees_table . " WHERE employee_number = %s", $employee_number ) );
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::$employees_table . " WHERE employee_number = %s", $employee_number ) );
+        ejpt_log('Result for get_employee_by_number: ', $result);
+        return $result;
     }
 
     public static function update_employee( $employee_id, $employee_number, $first_name, $last_name, $is_active = null ) {
+        ejpt_log('Attempting to update employee ID: ' . $employee_id, __METHOD__);
+        ejpt_log(compact('employee_id', 'employee_number', 'first_name', 'last_name', 'is_active'), __METHOD__);
         self::init();
         global $wpdb;
 
         if (empty($employee_number) || empty($first_name) || empty($last_name)) {
-            return new WP_Error('missing_fields', 'All fields (Employee Number, First Name, Last Name) are required.');
+            $error = new WP_Error('missing_fields', 'All fields (Employee Number, First Name, Last Name) are required.');
+            ejpt_log('Error updating employee: Missing fields.', $error);
+            return $error;
         }
         
-        // Check if new employee number already exists for a different employee
         $existing_employee = $wpdb->get_row( $wpdb->prepare("SELECT employee_id FROM " . self::$employees_table . " WHERE employee_number = %s AND employee_id != %d", $employee_number, $employee_id) );
         if ($existing_employee) {
-            return new WP_Error('employee_number_exists', 'This employee number is already assigned to another employee.');
+            $error = new WP_Error('employee_number_exists', 'This employee number is already assigned to another employee.');
+            ejpt_log('Error updating employee: Employee number exists for another ID.', $error);
+            return $error;
         }
 
         $data = array(
@@ -158,12 +198,16 @@ class EJPT_DB {
             array( '%d' )
         );
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not update employee. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not update employee. Error: ' . $wpdb->last_error);
+            ejpt_log('Error updating employee: DB update failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Employee updated successfully. ID: ' . $employee_id, __METHOD__);
         return true;
     }
 
     public static function toggle_employee_status( $employee_id, $is_active ) {
+        ejpt_log('Toggling employee status for ID: ' . $employee_id . ' to ' . $is_active, __METHOD__);
         self::init();
         global $wpdb;
         $result = $wpdb->update(
@@ -174,12 +218,17 @@ class EJPT_DB {
             array( '%d' )
         );
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not update employee status. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not update employee status. Error: ' . $wpdb->last_error);
+            ejpt_log('Error toggling employee status: DB update failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Employee status toggled successfully for ID: ' . $employee_id, __METHOD__);
         return true;
     }
 
     public static function get_employees( $args = array() ) {
+        ejpt_log('Attempting to get employees with args:', __METHOD__);
+        ejpt_log($args, __METHOD__);
         self::init();
         global $wpdb;
         $defaults = array(
@@ -227,10 +276,15 @@ class EJPT_DB {
             $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
         
-        return $wpdb->get_results( $sql );
+        $results = $wpdb->get_results( $sql );
+        ejpt_log('Get employees query executed. Number of results: ' . count($results), __METHOD__);
+        // ejpt_log($results, __METHOD__); // Potentially too verbose for many employees
+        return $results;
     }
     
     public static function get_employees_count( $args = array() ) {
+        ejpt_log('Attempting to get employees count with args:', __METHOD__);
+        ejpt_log($args, __METHOD__);
         self::init();
         global $wpdb;
         // Similar to get_employees but for COUNT(*)
@@ -254,21 +308,29 @@ class EJPT_DB {
         if ( !empty($where_clauses) ) {
             $sql .= " WHERE " . implode(" AND ", $where_clauses);
         }
-        return $wpdb->get_var( $sql );
+        $count = $wpdb->get_var( $sql );
+        ejpt_log('Employees count result: ' . $count, __METHOD__);
+        return $count;
     }
 
     // --- Phase CRUD Methods ---
     public static function add_phase( $phase_name, $phase_description ) {
+        ejpt_log('Attempting to add phase.', __METHOD__);
+        ejpt_log(compact('phase_name', 'phase_description'), __METHOD__);
         self::init();
         global $wpdb;
 
         if (empty($phase_name)) {
-            return new WP_Error('missing_field', 'Phase Name is required.');
+            $error = new WP_Error('missing_field', 'Phase Name is required.');
+            ejpt_log('Error adding phase: Missing Phase Name.', $error);
+            return $error;
         }
 
         $exists = $wpdb->get_var( $wpdb->prepare("SELECT phase_id FROM " . self::$phases_table . " WHERE phase_name = %s", $phase_name) );
         if ($exists) {
-            return new WP_Error('phase_exists', 'Phase name already exists.');
+            $error = new WP_Error('phase_exists', 'Phase name already exists.');
+            ejpt_log('Error adding phase: Phase name exists.', $error);
+            return $error;
         }
 
         $result = $wpdb->insert(
@@ -282,28 +344,40 @@ class EJPT_DB {
             array('%s', '%s', '%d', '%s')
         );
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not add phase. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not add phase. Error: ' . $wpdb->last_error);
+            ejpt_log('Error adding phase: DB insert failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Phase added successfully. ID: ' . $wpdb->insert_id, __METHOD__);
         return $wpdb->insert_id;
     }
 
     public static function get_phase( $phase_id ) {
+        ejpt_log('Attempting to get phase by ID: ' . $phase_id, __METHOD__);
         self::init();
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::$phases_table . " WHERE phase_id = %d", $phase_id ) );
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::$phases_table . " WHERE phase_id = %d", $phase_id ) );
+        ejpt_log('Result for get_phase: ', $result);
+        return $result;
     }
 
     public static function update_phase( $phase_id, $phase_name, $phase_description, $is_active = null ) {
+        ejpt_log('Attempting to update phase ID: ' . $phase_id, __METHOD__);
+        ejpt_log(compact('phase_id', 'phase_name', 'phase_description', 'is_active'), __METHOD__);
         self::init();
         global $wpdb;
 
         if (empty($phase_name)) {
-            return new WP_Error('missing_field', 'Phase Name is required.');
+            $error = new WP_Error('missing_field', 'Phase Name is required.');
+            ejpt_log('Error updating phase: Missing Phase Name.', $error);
+            return $error;
         }
 
         $existing_phase = $wpdb->get_row( $wpdb->prepare("SELECT phase_id FROM " . self::$phases_table . " WHERE phase_name = %s AND phase_id != %d", $phase_name, $phase_id) );
         if ($existing_phase) {
-            return new WP_Error('phase_name_exists', 'This phase name is already in use.');
+            $error = new WP_Error('phase_name_exists', 'This phase name is already in use.');
+            ejpt_log('Error updating phase: Phase name exists for another ID.', $error);
+            return $error;
         }
 
         $data = array(
@@ -325,12 +399,16 @@ class EJPT_DB {
             array( '%d' )
         );
          if ($result === false) {
-            return new WP_Error('db_error', 'Could not update phase. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not update phase. Error: ' . $wpdb->last_error);
+            ejpt_log('Error updating phase: DB update failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Phase updated successfully. ID: ' . $phase_id, __METHOD__);
         return true;
     }
 
     public static function toggle_phase_status( $phase_id, $is_active ) {
+        ejpt_log('Toggling phase status for ID: ' . $phase_id . ' to ' . $is_active, __METHOD__);
         self::init();
         global $wpdb;
         $result = $wpdb->update(
@@ -341,8 +419,11 @@ class EJPT_DB {
             array( '%d' )
         );
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not update phase status. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not update phase status. Error: ' . $wpdb->last_error);
+            ejpt_log('Error toggling phase status: DB update failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Phase status toggled successfully for ID: ' . $phase_id, __METHOD__);
         return true;
     }
 
@@ -396,6 +477,8 @@ class EJPT_DB {
     }
     
     public static function get_phases_count( $args = array() ) {
+        ejpt_log('Attempting to get phases count with args:', __METHOD__);
+        ejpt_log($args, __METHOD__);
         self::init();
         global $wpdb;
         $defaults = array(
@@ -418,11 +501,15 @@ class EJPT_DB {
         if ( !empty($where_clauses) ) {
             $sql .= " WHERE " . implode(" AND ", $where_clauses);
         }
-        return $wpdb->get_var( $sql );
+        $count = $wpdb->get_var( $sql );
+        ejpt_log('Phases count result: ' . $count, __METHOD__);
+        return $count;
     }
 
     // --- Job Log CRUD Methods ---
     public static function start_job_phase( $employee_id, $job_number, $phase_id, $notes = '' ) {
+        ejpt_log('Attempting to start job phase.', __METHOD__);
+        ejpt_log(compact('employee_id', 'job_number', 'phase_id', 'notes'), __METHOD__);
         self::init();
         global $wpdb;
 
@@ -453,12 +540,17 @@ class EJPT_DB {
             array('%d', '%s', '%d', '%s', '%s', '%s')
         );
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not start job phase. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not start job phase. Error: ' . $wpdb->last_error);
+            ejpt_log('Error starting job phase: DB insert failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Job phase started successfully. Log ID: ' . $wpdb->insert_id, __METHOD__);
         return $wpdb->insert_id;
     }
 
     public static function stop_job_phase( $employee_id, $job_number, $phase_id, $boxes_completed, $items_completed, $notes = '' ) {
+        ejpt_log('Attempting to stop job phase.', __METHOD__);
+        ejpt_log(compact('employee_id', 'job_number', 'phase_id', 'boxes_completed', 'items_completed', 'notes'), __METHOD__);
         self::init();
         global $wpdb;
 
@@ -505,15 +597,21 @@ class EJPT_DB {
         );
 
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not stop job phase. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not stop job phase. Error: ' . $wpdb->last_error);
+            ejpt_log('Error stopping job phase: DB update failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Job phase stopped successfully for conditions.', __METHOD__);
         return true;
     }
 
     public static function get_job_log( $log_id ) {
+        ejpt_log('Attempting to get job log by ID: ' . $log_id, __METHOD__);
         self::init();
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::$job_logs_table . " WHERE log_id = %d", $log_id ) );
+        $result = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . self::$job_logs_table . " WHERE log_id = %d", $log_id ) );
+        ejpt_log('Result for get_job_log: ', $result);
+        return $result;
     }
 
     public static function get_job_logs( $args = array() ) {
@@ -619,6 +717,8 @@ class EJPT_DB {
     }
 
     public static function get_job_logs_count( $args = array() ) {
+        ejpt_log('Attempting to get job logs count with args:', __METHOD__);
+        ejpt_log($args, __METHOD__);
         self::init();
         global $wpdb;
         $defaults = array(
@@ -673,21 +773,27 @@ class EJPT_DB {
             $sql .= " WHERE " . implode(" AND ", $where_clauses);
         }
 
-        return $wpdb->get_var( $sql );
+        $count = $wpdb->get_var( $sql );
+        ejpt_log('Job logs count result: ' . $count, __METHOD__);
+        return $count;
     }
     
     /**
      * Get a specific job log for update, typically the one that was started but not stopped.
      */
     public static function get_open_job_log($employee_id, $job_number, $phase_id) {
+        ejpt_log('Attempting to get open job log.', __METHOD__);
+        ejpt_log(compact('employee_id', 'job_number', 'phase_id'), __METHOD__);
         self::init();
         global $wpdb;
-        return $wpdb->get_row($wpdb->prepare(
+        $result = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM " . self::$job_logs_table . " 
              WHERE employee_id = %d AND job_number = %s AND phase_id = %d AND status = 'started' 
              ORDER BY start_time DESC LIMIT 1",
             $employee_id, $job_number, $phase_id
         ));
+        ejpt_log('Result for get_open_job_log: ', $result);
+        return $result;
     }
     
     /**
@@ -695,8 +801,9 @@ class EJPT_DB {
      * Used for manual edits if implemented in the future.
      */
     public static function update_job_log($log_id, $data) {
+        ejpt_log('Attempting to update job log ID: ' . $log_id, __METHOD__);
+        ejpt_log($data, __METHOD__);
         self::init();
-        global $wpdb;
 
         // Define allowable fields and their formats
         $allowed_fields = array(
@@ -741,8 +848,11 @@ class EJPT_DB {
         );
 
         if ($result === false) {
-            return new WP_Error('db_error', 'Could not update job log. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not update job log. Error: ' . $wpdb->last_error);
+            ejpt_log('Error updating job log: DB update failed. ' . $wpdb->last_error, $error);
+            return $error;
         }
+        ejpt_log('Job log updated successfully. ID: ' . $log_id, __METHOD__);
         return true;
     }
 

@@ -96,9 +96,12 @@ class EJPT_Admin_Pages {
      * Handle the submission of the "Start Job Phase" form.
      */
     public static function handle_start_job_form() {
-        check_ajax_referer('ejpt_start_job_nonce', 'ejpt_start_job_nonce'); // Renamed nonce field in form
+        ejpt_log('AJAX: Attempting to handle start job form.', __METHOD__);
+        ejpt_log('POST data: ', $_POST);
+        check_ajax_referer('ejpt_start_job_nonce', 'ejpt_start_job_nonce');
 
         if (!current_user_can(ejpt_get_form_access_capability())) { 
+            ejpt_log('AJAX Error: Permission denied to start job.', __METHOD__);
             wp_send_json_error(['message' => 'Permission denied to start job.'], 403);
             return;
         }
@@ -106,20 +109,24 @@ class EJPT_Admin_Pages {
         $employee_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
         $job_number = isset($_POST['job_number']) ? sanitize_text_field($_POST['job_number']) : '';
         $phase_id = isset($_POST['phase_id']) ? intval($_POST['phase_id']) : 0;
-        $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : ''; // For start form
+        $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : '';
 
         if (empty($employee_id) || empty($job_number) || empty($phase_id)) {
+            ejpt_log('AJAX Error: Missing required fields for start job.', $_POST);
             wp_send_json_error(['message' => 'Missing required fields: Employee, Job Number, or Phase ID.']);
             return;
         }
         
         $employee = EJPT_DB::get_employee($employee_id);
         if (!$employee || !$employee->is_active) {
+            ejpt_log('AJAX Error: Selected employee not active or does not exist for start job.', $employee_id);
             wp_send_json_error(['message' => 'Selected employee is not active or does not exist.']);
             return;
         }
         $phase = EJPT_DB::get_phase($phase_id);
         if (!$phase || !$phase->is_active) {
+            // Note: The start-job-form-page.php view also checks this, but double check here.
+            ejpt_log('AJAX Error: Selected phase not active or does not exist for start job.', $phase_id);
             wp_send_json_error(['message' => 'Selected phase is not active or does not exist.']);
             return;
         }
@@ -127,8 +134,10 @@ class EJPT_Admin_Pages {
         $result = EJPT_DB::start_job_phase($employee_id, $job_number, $phase_id, $notes);
 
         if (is_wp_Error($result)) {
+            ejpt_log('AJAX Error starting job: ' . $result->get_error_message(), __METHOD__);
             wp_send_json_error(['message' => 'Error starting job: ' . $result->get_error_message()]);
         } else {
+            ejpt_log('AJAX Success: Job phase started. Log ID: ' . $result, __METHOD__);
             wp_send_json_success(['message' => 'Job phase started successfully. Log ID: ' . $result]);
         }
     }
@@ -137,10 +146,13 @@ class EJPT_Admin_Pages {
      * Handle the submission of the "Stop Job Phase" form.
      */
     public static function handle_stop_job_form() {
-        check_ajax_referer('ejpt_stop_job_nonce', 'ejpt_stop_job_nonce'); // Renamed nonce field in form
+        ejpt_log('AJAX: Attempting to handle stop job form.', __METHOD__);
+        ejpt_log('POST data: ', $_POST);
+        check_ajax_referer('ejpt_stop_job_nonce', 'ejpt_stop_job_nonce');
 
         if (!current_user_can(ejpt_get_form_access_capability())) { 
-             wp_send_json_error(['message' => 'Permission denied to stop job.'], 403);
+            ejpt_log('AJAX Error: Permission denied to stop job.', __METHOD__);
+            wp_send_json_error(['message' => 'Permission denied to stop job.'], 403);
             return;
         }
 
@@ -152,11 +164,13 @@ class EJPT_Admin_Pages {
         $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : '';
 
         if (empty($employee_id) || empty($job_number) || empty($phase_id)) {
+            ejpt_log('AJAX Error: Missing required fields for stop job.', $_POST);
             wp_send_json_error(['message' => 'Missing required fields: Employee, Job Number, or Phase ID.']);
             return;
         }
         
         if ($boxes_completed < 0 || $items_completed < 0) {
+            ejpt_log('AJAX Error: Boxes/Items completed must be non-negative.', $_POST);
             wp_send_json_error(['message' => 'Boxes and Items completed must be non-negative.']);
             return;
         }
@@ -164,8 +178,10 @@ class EJPT_Admin_Pages {
         $result = EJPT_DB::stop_job_phase($employee_id, $job_number, $phase_id, $boxes_completed, $items_completed, $notes);
 
         if (is_wp_Error($result)) {
+            ejpt_log('AJAX Error stopping job: ' . $result->get_error_message(), __METHOD__);
             wp_send_json_error(['message' => 'Error stopping job: ' . $result->get_error_message()]);
         } else {
+            ejpt_log('AJAX Success: Job phase stopped and KPIs recorded.', __METHOD__);
             wp_send_json_success(['message' => 'Job phase stopped and KPIs recorded successfully.']);
         }
     }

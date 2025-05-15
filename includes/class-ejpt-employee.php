@@ -66,9 +66,13 @@ class EJPT_Employee {
      * Handle AJAX request to add an employee.
      */
     public static function ajax_add_employee() {
+        ejpt_log('AJAX: Attempting to add employee.', __METHOD__);
+        ejpt_log('POST data: ', $_POST);
+
         check_ajax_referer('ejpt_add_employee_nonce', 'ejpt_add_employee_nonce');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
+            ejpt_log('AJAX Error: Permission denied.', __METHOD__);
             wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
             return;
         }
@@ -78,6 +82,7 @@ class EJPT_Employee {
         $last_name = isset( $_POST['last_name'] ) ? sanitize_text_field( $_POST['last_name'] ) : '';
 
         if ( empty( $employee_number ) || empty( $first_name ) || empty( $last_name ) ) {
+            ejpt_log('AJAX Error: All fields are required.', __METHOD__);
             wp_send_json_error( array( 'message' => 'Error: All fields are required.' ) );
             return;
         }
@@ -85,8 +90,10 @@ class EJPT_Employee {
         $result = EJPT_DB::add_employee( $employee_number, $first_name, $last_name );
 
         if ( is_wp_error( $result ) ) {
+            ejpt_log('AJAX Error adding employee: ' . $result->get_error_message(), __METHOD__);
             wp_send_json_error( array( 'message' => 'Error: ' . $result->get_error_message() ) );
         } else {
+            ejpt_log('AJAX Success: Employee added. ID: ' . $result, __METHOD__);
             wp_send_json_success( array( 'message' => 'Employee added successfully.', 'employee_id' => $result ) );
         }
     }
@@ -95,11 +102,12 @@ class EJPT_Employee {
      * Handle AJAX request to get an employee's details for editing.
      */
     public static function ajax_get_employee() {
-        // Nonce is checked in the JS before sending, using the edit_employee_nonce from the form
-        // However, for a GET-like operation, a specific nonce for this action is better.
+        ejpt_log('AJAX: Attempting to get employee.', __METHOD__);
+        ejpt_log('POST data: ', $_POST);
         check_ajax_referer('ejpt_edit_employee_nonce', '_ajax_nonce_get_employee'); 
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
+            ejpt_log('AJAX Error: Permission denied.', __METHOD__);
             wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
             return;
         }
@@ -107,6 +115,7 @@ class EJPT_Employee {
         $employee_id = isset( $_POST['employee_id'] ) ? intval( $_POST['employee_id'] ) : 0;
 
         if ( $employee_id <= 0 ) {
+            ejpt_log('AJAX Error: Invalid employee ID: ' . $employee_id, __METHOD__);
             wp_send_json_error( array( 'message' => 'Invalid employee ID.' ) );
             return;
         }
@@ -114,8 +123,10 @@ class EJPT_Employee {
         $employee = EJPT_DB::get_employee( $employee_id );
 
         if ( $employee ) {
+            ejpt_log('AJAX Success: Employee found.', $employee);
             wp_send_json_success( $employee );
         } else {
+            ejpt_log('AJAX Error: Employee not found for ID: ' . $employee_id, __METHOD__);
             wp_send_json_error( array( 'message' => 'Employee not found.' ) );
         }
     }
@@ -124,9 +135,12 @@ class EJPT_Employee {
      * Handle AJAX request to update an employee.
      */
     public static function ajax_update_employee() {
+        ejpt_log('AJAX: Attempting to update employee.', __METHOD__);
+        ejpt_log('POST data: ', $_POST);
         check_ajax_referer('ejpt_edit_employee_nonce', 'ejpt_edit_employee_nonce');
 
         if ( ! current_user_can( ejpt_get_capability() ) ) { 
+            ejpt_log('AJAX Error: Permission denied.', __METHOD__);
             wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
             return;
         }
@@ -135,9 +149,9 @@ class EJPT_Employee {
         $employee_number = isset( $_POST['edit_employee_number'] ) ? sanitize_text_field( $_POST['edit_employee_number'] ) : '';
         $first_name = isset( $_POST['edit_first_name'] ) ? sanitize_text_field( $_POST['edit_first_name'] ) : '';
         $last_name = isset( $_POST['edit_last_name'] ) ? sanitize_text_field( $_POST['edit_last_name'] ) : '';
-        // is_active is handled by a separate toggle function for simplicity in the main table
 
         if ( $employee_id <= 0 || empty( $employee_number ) || empty( $first_name ) || empty( $last_name ) ) {
+            ejpt_log('AJAX Error: All fields are required and Employee ID must be valid.', $_POST);
             wp_send_json_error( array( 'message' => 'Error: All fields are required and Employee ID must be valid.' ) );
             return;
         }
@@ -145,8 +159,10 @@ class EJPT_Employee {
         $result = EJPT_DB::update_employee( $employee_id, $employee_number, $first_name, $last_name );
 
         if ( is_wp_error( $result ) ) {
+            ejpt_log('AJAX Error updating employee: ' . $result->get_error_message(), __METHOD__);
             wp_send_json_error( array( 'message' => 'Error: ' . $result->get_error_message() ) );
         } else {
+            ejpt_log('AJAX Success: Employee updated. ID: ' . $employee_id, __METHOD__);
             wp_send_json_success( array( 'message' => 'Employee updated successfully.' ) );
         }
     }
@@ -155,9 +171,12 @@ class EJPT_Employee {
      * Handle AJAX request to toggle employee active status.
      */
     public static function ajax_toggle_employee_status() {
+        ejpt_log('AJAX: Attempting to toggle employee status.', __METHOD__);
+        ejpt_log('POST data: ', $_POST);
         check_ajax_referer('ejpt_toggle_status_nonce', '_ajax_nonce'); 
 
         if ( ! current_user_can( ejpt_get_capability() ) ) {
+            ejpt_log('AJAX Error: Permission denied.', __METHOD__);
             wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
             return;
         }
@@ -166,6 +185,7 @@ class EJPT_Employee {
         $new_status = isset( $_POST['is_active'] ) ? intval( $_POST['is_active'] ) : 0;
 
         if ( $employee_id <= 0 ) {
+            ejpt_log('AJAX Error: Invalid employee ID: ' . $employee_id, __METHOD__);
             wp_send_json_error( array( 'message' => 'Invalid employee ID.' ) );
             return;
         }
@@ -173,9 +193,11 @@ class EJPT_Employee {
         $result = EJPT_DB::toggle_employee_status( $employee_id, $new_status );
 
         if ( is_wp_error( $result ) ) {
+            ejpt_log('AJAX Error toggling employee status: ' . $result->get_error_message(), __METHOD__);
             wp_send_json_error( array( 'message' => 'Error: ' . $result->get_error_message() ) );
         } else {
             $message = $new_status ? 'Employee activated.' : 'Employee deactivated.';
+            ejpt_log('AJAX Success: ' . $message . ' ID: ' . $employee_id, __METHOD__);
             wp_send_json_success( array( 'message' => $message, 'new_status' => $new_status ) );
         }
     }

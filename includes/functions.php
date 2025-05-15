@@ -71,4 +71,28 @@ function ejpt_get_form_access_capability() {
     // 'read' means any logged-in user. 
     // Consider creating a custom role/capability for more fine-grained control.
     return apply_filters('ejpt_form_access_capability', 'read'); 
+}
+
+/**
+ * Helper function for logging plugin debug messages.
+ * Only logs if WP_DEBUG is true.
+ *
+ * @param mixed $message The message or data to log.
+ * @param string $context Optional context for the log entry (e.g., function name).
+ */
+function ejpt_log($message, $context = '') {
+    if (defined('WP_DEBUG') && WP_DEBUG === true) {
+        $log_entry = '[EJPT_DEBUG';
+        if (!empty($context)) {
+            $log_entry .= ' - ' . $context;
+        }
+        $log_entry .= ']: ';
+
+        if (is_array($message) || is_object($message)) {
+            $log_entry .= print_r($message, true);
+        } else {
+            $log_entry .= $message;
+        }
+        error_log($log_entry);
+    }
 } 
