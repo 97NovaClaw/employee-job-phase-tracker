@@ -241,7 +241,7 @@ class EJPT_DB {
         );
         $args = wp_parse_args($args, $defaults);
 
-        $sql = "SELECT * FROM " . self::$employees_table;
+        $sql_base = "SELECT * FROM " . self::$employees_table;
         $where_clauses = array();
         $query_params = array();
 
@@ -257,28 +257,35 @@ class EJPT_DB {
             $query_params[] = $search_term;
         }
 
+        $sql_where = "";
         if ( !empty($where_clauses) ) {
-            $sql .= " WHERE " . implode(" AND ", $where_clauses);
+            $sql_where = " WHERE " . implode(" AND ", $where_clauses);
         }
+        
+        $sql = $sql_base . $sql_where;
 
         if (!empty($query_params)){
             $sql = $wpdb->prepare($sql, $query_params);
         }
         
-        // Sanitize orderby and order
-        $orderby = sanitize_sql_orderby($args['orderby']);
-        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
-        if ($orderby) { // Only add if orderby is valid
-            $sql .= " ORDER BY $orderby $order";
+        $orderby_clause = "";
+        if (!empty($args['orderby'])) {
+            $orderby_val = sanitize_sql_orderby($args['orderby']);
+            if ($orderby_val) {
+                $order_val = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+                $orderby_clause = " ORDER BY $orderby_val $order_val";
+            }
         }
+        $sql .= $orderby_clause;
 
-        if ( $args['number'] > 0 ) {
-            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
+        $limit_clause = "";
+        if ( isset($args['number']) && $args['number'] > 0 ) {
+            $limit_clause = sprintf(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
+        $sql .= $limit_clause;
         
         $results = $wpdb->get_results( $sql );
-        ejpt_log('Get employees query executed. Number of results: ' . count($results), __METHOD__);
-        // ejpt_log($results, __METHOD__); // Potentially too verbose for many employees
+        ejpt_log('Get employees query executed. SQL: ' . $sql . ' Number of results: ' . count($results), __METHOD__);
         return $results;
     }
     
@@ -428,6 +435,8 @@ class EJPT_DB {
     }
 
     public static function get_phases( $args = array() ) {
+        ejpt_log('Attempting to get phases with args:', __METHOD__);
+        ejpt_log($args, __METHOD__);
         self::init();
         global $wpdb;
         $defaults = array(
@@ -440,7 +449,7 @@ class EJPT_DB {
         );
         $args = wp_parse_args($args, $defaults);
 
-        $sql = "SELECT * FROM " . self::$phases_table;
+        $sql_base = "SELECT * FROM " . self::$phases_table;
         $where_clauses = array();
         $query_params = array();
 
@@ -455,25 +464,36 @@ class EJPT_DB {
             $query_params[] = $search_term;
         }
 
+        $sql_where = "";
         if ( !empty($where_clauses) ) {
-            $sql .= " WHERE " . implode(" AND ", $where_clauses);
+            $sql_where = " WHERE " . implode(" AND ", $where_clauses);
         }
+        
+        $sql = $sql_base . $sql_where;
         
         if (!empty($query_params)){
             $sql = $wpdb->prepare($sql, $query_params);
         }
 
-        $orderby = sanitize_sql_orderby($args['orderby']);
-        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
-        if ($orderby) {
-            $sql .= " ORDER BY $orderby $order";
+        $orderby_clause = "";
+        if (!empty($args['orderby'])) {
+            $orderby_val = sanitize_sql_orderby($args['orderby']);
+            if ($orderby_val) {
+                $order_val = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+                $orderby_clause = " ORDER BY $orderby_val $order_val";
+            }
         }
+        $sql .= $orderby_clause;
 
-        if ( $args['number'] > 0 ) {
-            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
+        $limit_clause = "";
+        if ( isset($args['number']) && $args['number'] > 0 ) {
+            $limit_clause = sprintf(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
+        $sql .= $limit_clause;
 
-        return $wpdb->get_results( $sql );
+        $results = $wpdb->get_results( $sql );
+        ejpt_log('Get phases query executed. SQL: ' . $sql . ' Number of results: ' . count($results), __METHOD__);
+        return $results;
     }
     
     public static function get_phases_count( $args = array() ) {
@@ -615,6 +635,8 @@ class EJPT_DB {
     }
 
     public static function get_job_logs( $args = array() ) {
+        ejpt_log('Attempting to get job logs with args:', __METHOD__);
+        ejpt_log($args, __METHOD__);
         self::init();
         global $wpdb;
 
@@ -638,7 +660,7 @@ class EJPT_DB {
                      LEFT JOIN " . self::$employees_table . " e ON jl.employee_id = e.employee_id
                      LEFT JOIN " . self::$phases_table . " p ON jl.phase_id = p.phase_id";
         
-        $sql = $sql_select . $sql_from;
+        $sql_base = $sql_select . $sql_from;
         $where_clauses = array();
         $query_params = array();
 
@@ -687,33 +709,43 @@ class EJPT_DB {
             $query_params[] = $search_term;
         }
 
+        $sql_where = "";
         if ( !empty($where_clauses) ) {
-            $sql .= " WHERE " . implode(" AND ", $where_clauses);
+            $sql_where = " WHERE " . implode(" AND ", $where_clauses);
         }
+        
+        $sql = $sql_base . $sql_where;
 
         if (!empty($query_params)){
             $sql = $wpdb->prepare($sql, $query_params);
         }
 
-        $allowed_orderby = array('jl.start_time', 'jl.end_time', 'e.last_name', 'e.first_name', 'e.employee_number', 'jl.job_number', 'p.phase_name', 'jl.status', 'jl.boxes_completed', 'jl.items_completed');
-        $orderby_input = $args['orderby'];
-        // Handle combined sorting for employee name
-        if ($orderby_input === 'e.last_name' || $orderby_input === 'e.first_name') {
-            $orderby = 'e.last_name ' . ($args['order'] === 'ASC' ? 'ASC' : 'DESC') . ', e.first_name';
-        } else {
-            $orderby = in_array($orderby_input, $allowed_orderby) ? $orderby_input : 'jl.start_time';
+        $orderby_clause = "";
+        if (!empty($args['orderby'])) {
+            $allowed_orderby = array('jl.start_time', 'jl.end_time', 'e.last_name', 'e.first_name', 'e.employee_number', 'jl.job_number', 'p.phase_name', 'jl.status', 'jl.boxes_completed', 'jl.items_completed');
+            $orderby_input = $args['orderby'];
+            $order_val = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
+            
+            if ($orderby_input === 'e.last_name' || $orderby_input === 'e.first_name') {
+                // Special handling for sorting by employee name (last then first)
+                $orderby_clause = " ORDER BY e.last_name $order_val, e.first_name $order_val";
+            } elseif (in_array($orderby_input, $allowed_orderby)) {
+                $orderby_clause = " ORDER BY $orderby_input $order_val";
+            } else {
+                 $orderby_clause = " ORDER BY jl.start_time $order_val"; // Default sort
+            }
         }
-        $order = strtoupper($args['order']) === 'ASC' ? 'ASC' : 'DESC';
-        // Only append $order if not already part of $orderby (for combined sort case)
-        $sql .= " ORDER BY $orderby " . ((strpos($orderby, 'ASC') === false && strpos($orderby, 'DESC') === false) ? $order : '');
+        $sql .= $orderby_clause;
 
-
+        $limit_clause = "";
         if ( isset($args['number']) && $args['number'] > 0 ) {
-            // This prepare is fine as it only deals with integers for LIMIT/OFFSET
-            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
+            $limit_clause = sprintf(" LIMIT %d OFFSET %d", intval($args['number']), intval($args['offset']));
         }
+        $sql .= $limit_clause;
 
-        return $wpdb->get_results( $sql );
+        $results = $wpdb->get_results( $sql );
+        ejpt_log('Get job_logs query executed. SQL: ' . $sql . ' Number of results: ' . count($results), __METHOD__);
+        return $results;
     }
 
     public static function get_job_logs_count( $args = array() ) {
