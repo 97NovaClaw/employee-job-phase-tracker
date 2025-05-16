@@ -55,14 +55,9 @@ $form_disabled = empty( $job_number_get ) || !$phase_valid;
 
         <table class="form-table ejpt-form-table">
             <tr valign="top">
-                <th scope="row"><label for="employee_id_stop"><?php esc_html_e( 'Employee', 'ejpt' ); ?></label></th>
+                <th scope="row"><label for="employee_number_stop"><?php esc_html_e( 'Employee Number', 'ejpt' ); ?></label></th>
                 <td>
-                    <select id="employee_id_stop" name="employee_id" required <?php disabled($form_disabled); ?>>
-                        <option value=""><?php esc_html_e( '-- Select Employee --', 'ejpt' ); ?></option>
-                        <?php foreach ( $active_employees as $employee ) : ?>
-                            <option value="<?php echo esc_attr( $employee['id'] ); ?>"><?php echo esc_html( $employee['name'] ); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <input type="text" id="employee_number_stop" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'ejpt'); ?>" />
                 </td>
             </tr>
             <tr valign="top">
@@ -115,16 +110,16 @@ jQuery(document).ready(function($) {
     }
 
     const stopJobButton = $('#stop-job-submit');
-    const employeeSelectStop = $('#employee_id_stop');
+    const employeeNumberInputStop = $('#employee_number_stop');
     const phpFormDisabledStop = <?php echo json_encode($form_disabled); ?>;
 
     function updateStopButtonState() {
         if (phpFormDisabledStop) {
             stopJobButton.prop('disabled', true);
             console.log('Stop Job button disabled by PHP.');
-        } else if (employeeSelectStop.val() === '') {
+        } else if (employeeNumberInputStop.val().trim() === '') {
             stopJobButton.prop('disabled', true);
-            console.log('Stop Job button disabled (no employee selected).');
+            console.log('Stop Job button disabled (no employee number entered).');
         } else {
             stopJobButton.prop('disabled', false);
             console.log('Stop Job button enabled.');
@@ -134,8 +129,8 @@ jQuery(document).ready(function($) {
     // Initial state check
     updateStopButtonState();
 
-    // Update button state when employee selection changes
-    employeeSelectStop.on('change', updateStopButtonState);
+    // Update button state when employee number input changes
+    employeeNumberInputStop.on('input', updateStopButtonState);
 
     // AJAX submission is in admin-scripts.js
 });

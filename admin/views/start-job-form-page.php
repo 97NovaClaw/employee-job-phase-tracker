@@ -73,14 +73,9 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
 
         <table class="form-table ejpt-form-table">
             <tr valign="top">
-                <th scope="row"><label for="employee_id_start"><?php esc_html_e( 'Employee', 'ejpt' ); ?></label></th>
+                <th scope="row"><label for="employee_number_start"><?php esc_html_e( 'Employee Number', 'ejpt' ); ?></label></th>
                 <td>
-                    <select id="employee_id_start" name="employee_id" required <?php disabled($form_disabled); ?>>
-                        <option value=""><?php esc_html_e( '-- Select Employee --', 'ejpt' ); ?></option>
-                        <?php foreach ( $active_employees as $employee ) : ?>
-                            <option value="<?php echo esc_attr( $employee['id'] ); ?>"><?php echo esc_html( $employee['name'] ); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <input type="text" id="employee_number_start" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'ejpt'); ?>" />
                 </td>
             </tr>
             <tr valign="top">
@@ -125,16 +120,16 @@ jQuery(document).ready(function($) {
     }
 
     const startJobButton = $('#start-job-submit');
-    const employeeSelect = $('#employee_id_start');
+    const employeeNumberInput = $('#employee_number_start');
     const phpFormDisabled = <?php echo json_encode($form_disabled); ?>;
 
     function updateButtonState() {
         if (phpFormDisabled) {
             startJobButton.prop('disabled', true);
             console.log('Start Job button disabled by PHP.');
-        } else if (employeeSelect.val() === '') {
+        } else if (employeeNumberInput.val().trim() === '') {
             startJobButton.prop('disabled', true);
-            console.log('Start Job button disabled (no employee selected).');
+            console.log('Start Job button disabled (no employee number entered).');
         } else {
             startJobButton.prop('disabled', false);
             console.log('Start Job button enabled.');
@@ -144,8 +139,8 @@ jQuery(document).ready(function($) {
     // Initial state check
     updateButtonState();
 
-    // Update button state when employee selection changes
-    employeeSelect.on('change', updateButtonState);
+    // Update button state when employee number input changes
+    employeeNumberInput.on('input', updateButtonState);
 
     // AJAX submission is in admin-scripts.js
 });

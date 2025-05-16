@@ -106,26 +106,28 @@ class EJPT_Admin_Pages {
             return;
         }
 
-        $employee_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
+        $employee_number_input = isset($_POST['employee_number']) ? sanitize_text_field(trim($_POST['employee_number'])) : '';
         $job_number = isset($_POST['job_number']) ? sanitize_text_field($_POST['job_number']) : '';
         $phase_id = isset($_POST['phase_id']) ? intval($_POST['phase_id']) : 0;
         $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : '';
 
-        if (empty($employee_id) || empty($job_number) || empty($phase_id)) {
-            ejpt_log('AJAX Error: Missing required fields for start job.', $_POST);
-            wp_send_json_error(['message' => 'Missing required fields: Employee, Job Number, or Phase ID.']);
+        if (empty($employee_number_input) || empty($job_number) || empty($phase_id)) {
+            ejpt_log('AJAX Error: Missing required fields for start job (EmpNo, JobNo, PhaseID).', $_POST);
+            wp_send_json_error(['message' => 'Missing required fields: Employee Number, Job Number, or Phase ID.']);
             return;
         }
         
-        $employee = EJPT_DB::get_employee($employee_id);
+        // Get employee_id from employee_number
+        $employee = EJPT_DB::get_employee_by_number($employee_number_input);
         if (!$employee || !$employee->is_active) {
-            ejpt_log('AJAX Error: Selected employee not active or does not exist for start job.', $employee_id);
-            wp_send_json_error(['message' => 'Selected employee is not active or does not exist.']);
+            ejpt_log('AJAX Error: Invalid or inactive employee number: ' . $employee_number_input, __METHOD__);
+            wp_send_json_error(['message' => 'Invalid or inactive Employee Number.']);
             return;
         }
+        $employee_id = $employee->employee_id;
+
         $phase = EJPT_DB::get_phase($phase_id);
         if (!$phase || !$phase->is_active) {
-            // Note: The start-job-form-page.php view also checks this, but double check here.
             ejpt_log('AJAX Error: Selected phase not active or does not exist for start job.', $phase_id);
             wp_send_json_error(['message' => 'Selected phase is not active or does not exist.']);
             return;
@@ -156,18 +158,27 @@ class EJPT_Admin_Pages {
             return;
         }
 
-        $employee_id = isset($_POST['employee_id']) ? intval($_POST['employee_id']) : 0;
+        $employee_number_input = isset($_POST['employee_number']) ? sanitize_text_field(trim($_POST['employee_number'])) : '';
         $job_number = isset($_POST['job_number']) ? sanitize_text_field($_POST['job_number']) : '';
         $phase_id = isset($_POST['phase_id']) ? intval($_POST['phase_id']) : 0;
         $boxes_completed = isset($_POST['boxes_completed']) ? intval($_POST['boxes_completed']) : 0;
         $items_completed = isset($_POST['items_completed']) ? intval($_POST['items_completed']) : 0;
         $notes = isset($_POST['notes']) ? sanitize_textarea_field($_POST['notes']) : '';
 
-        if (empty($employee_id) || empty($job_number) || empty($phase_id)) {
-            ejpt_log('AJAX Error: Missing required fields for stop job.', $_POST);
-            wp_send_json_error(['message' => 'Missing required fields: Employee, Job Number, or Phase ID.']);
+        if (empty($employee_number_input) || empty($job_number) || empty($phase_id)) {
+            ejpt_log('AJAX Error: Missing required fields for stop job (EmpNo, JobNo, PhaseID).', $_POST);
+            wp_send_json_error(['message' => 'Missing required fields: Employee Number, Job Number, or Phase ID.']);
             return;
         }
+
+        // Get employee_id from employee_number
+        $employee = EJPT_DB::get_employee_by_number($employee_number_input);
+        if (!$employee) { // Don't check is_active here, as they might be stopping a job started when they were active
+            ejpt_log('AJAX Error: Invalid employee number for stop job: ' . $employee_number_input, __METHOD__);
+            wp_send_json_error(['message' => 'Invalid Employee Number.']);
+            return;
+        }
+        $employee_id = $employee->employee_id;
         
         if ($boxes_completed < 0 || $items_completed < 0) {
             ejpt_log('AJAX Error: Boxes/Items completed must be non-negative.', $_POST);
