@@ -317,4 +317,36 @@ class EJPT_Dashboard {
             wp_send_json_success(['message' => 'Job log updated successfully.']);
         }
     }
+
+    /**
+     * Handle AJAX request to delete a job log entry.
+     */
+    public static function ajax_delete_job_log() {
+        check_ajax_referer('ejpt_delete_log_nonce', 'nonce'); // A new nonce for delete action
+        ejpt_log('AJAX: Delete job log request received.', __METHOD__);
+        ejpt_log($_POST, 'POST data for ' . __METHOD__);
+
+        if (!current_user_can(ejpt_get_capability())) { // Ensure admin capability
+            ejpt_log('AJAX Error: Permission denied for deleting job log.', __METHOD__);
+            wp_send_json_error(['message' => 'Permission denied.'], 403);
+            return;
+        }
+
+        $log_id = isset($_POST['log_id']) ? intval($_POST['log_id']) : 0;
+        if ($log_id <= 0) {
+            ejpt_log('AJAX Error: Invalid Log ID for deletion: ' . $log_id, __METHOD__);
+            wp_send_json_error(['message' => 'Invalid Log ID for deletion.']);
+            return;
+        }
+
+        $result = EJPT_DB::delete_job_log($log_id);
+
+        if (is_wp_error($result)) {
+            ejpt_log('AJAX Error from DB delete_job_log: ' . $result->get_error_message(), __METHOD__);
+            wp_send_json_error(['message' => 'Error deleting job log: ' . $result->get_error_message()]);
+        } else {
+            ejpt_log('AJAX Success: Job log deleted. Log ID: ' . $log_id, __METHOD__);
+            wp_send_json_success(['message' => 'Job log deleted successfully.']);
+        }
+    }
 } 

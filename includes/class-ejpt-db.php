@@ -899,6 +899,44 @@ class EJPT_DB {
         return true;
     }
 
+    /**
+     * Delete a specific job log entry.
+     * @param int $log_id The ID of the log entry to delete.
+     * @return bool|WP_Error True on success, WP_Error on failure.
+     */
+    public static function delete_job_log( $log_id ) {
+        self::init();
+        global $wpdb;
+        ejpt_log('Attempting to delete job log ID: ' . $log_id, __METHOD__);
+
+        if (empty($log_id) || !is_numeric($log_id) || intval($log_id) <= 0) {
+            $error = new WP_Error('invalid_id', 'Invalid Log ID provided for deletion.');
+            ejpt_log('Error deleting job log: ' . $error->get_error_message(), __METHOD__);
+            return $error;
+        }
+
+        $result = $wpdb->delete(
+            self::$job_logs_table,
+            array( 'log_id' => intval($log_id) ),
+            array( '%d' ) // Format of the WHERE clause value
+        );
+
+        if ($result === false) {
+            $error = new WP_Error('db_delete_error', 'Could not delete job log. WPDB Error: ' . $wpdb->last_error);
+            ejpt_log('Error deleting job log: DB delete failed. ' . $wpdb->last_error, $error);
+            return $error;
+        } elseif ($result === 0) {
+            // No rows were deleted, which could mean the log_id didn't exist
+            // Depending on desired behavior, this could be an error or just a non-event
+            ejpt_log('No job log found with ID: ' . $log_id . ' to delete. Or no rows affected.', __METHOD__);
+            // return new WP_Error('not_found', 'No job log found with that ID to delete.'); // Optionally treat as error
+            return true; // Or treat as success if no error but 0 rows affected
+        }
+
+        ejpt_log('Job log deleted successfully. ID: ' . $log_id . ', Rows affected: ' . $result, __METHOD__);
+        return true;
+    }
+
 }
 
 // Initialize table names on load

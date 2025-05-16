@@ -202,7 +202,9 @@ jQuery(document).ready(function($) {
                 searchable: false,
                 className: 'ejpt-actions-column',
                 render: function(data, type, row) {
-                    return '<button class="button button-secondary ejpt-edit-log-button" data-log-id="' + row.log_id + '"><?php echo esc_js(__("Edit", "ejpt")); ?></button>';
+                    let buttons = '<button class="button button-secondary ejpt-edit-log-button" data-log-id="' + row.log_id + '"><?php echo esc_js(__("Edit", "ejpt")); ?></button>';
+                    buttons += ' <button class="button button-link-delete ejpt-delete-log-button" data-log-id="' + row.log_id + '" style="color:#b32d2e;margin-left:5px;"><?php echo esc_js(__("Delete", "ejpt")); ?></button>';
+                    return buttons;
                 }
             }
         ],
@@ -448,6 +450,54 @@ jQuery(document).ready(function($) {
             .always(function() {
                 $submitButton.prop('disabled', false).val('<?php echo esc_js(__("Save Log Changes", "ejpt")); ?>');
             });
+    });
+
+    // Handle click on "Delete" button in DataTable
+    $('#ejpt-dashboard-table tbody').on('click', '.ejpt-delete-log-button', function () {
+        var logId = $(this).data('log-id');
+        console.log('Dashboard JS: Delete button clicked for log ID:', logId);
+
+        if (!logId) {
+            showNotice('error', '<?php echo esc_js(__("Error: Log ID is missing for delete.", "ejpt")); ?>');
+            return;
+        }
+
+        if (!confirm('<?php echo esc_js(__("Are you sure you want to permanently delete this job log entry? This action cannot be undone.", "ejpt")); ?>')) {
+            return;
+        }
+
+        // Disable button to prevent multiple clicks
+        $(this).prop('disabled', true).text('<?php echo esc_js(__("Deleting...", "ejpt")); ?>');
+        var $clickedButton = $(this);
+
+        $.ajax({
+            url: ejpt_data.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'ejpt_delete_job_log',
+                nonce: '<?php echo wp_create_nonce("ejpt_delete_log_nonce"); ?>',
+                log_id: logId
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    showNotice('success', response.data.message);
+                    ejpt_log('Successfully deleted log ID: ' + logId, 'Dashboard JS Delete');
+                    if (typeof dashboardTable !== 'undefined') {
+                        dashboardTable.ajax.reload(null, false); // Reload DataTable, false = don't reset pagination
+                    }
+                } else {
+                    showNotice('error', response.data.message || '<?php echo esc_js(__("Could not delete log entry.", "ejpt")); ?>');
+                    ejpt_log('Error deleting log: ', response.data);
+                    $clickedButton.prop('disabled', false).text('<?php echo esc_js(__("Delete", "ejpt")); ?>'); // Re-enable button on error
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                showNotice('error', '<?php echo esc_js(__("AJAX request failed: ", "ejpt")); ?>' + textStatus + ' - ' + errorThrown);
+                ejpt_log('AJAX error deleting log: ' + textStatus + ' - ' + errorThrown + ' | Response: ' + jqXHR.responseText, 'Dashboard JS Delete');
+                $clickedButton.prop('disabled', false).text('<?php echo esc_js(__("Delete", "ejpt")); ?>'); // Re-enable button on error
+            }
+        });
     });
 
 });

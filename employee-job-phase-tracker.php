@@ -113,3 +113,6 @@ add_action('wp_ajax_ejpt_get_dashboard_data', array('EJPT_Dashboard', 'ajax_get_
 // AJAX handlers for editing job logs from dashboard
 add_action('wp_ajax_ejpt_get_job_log_details', array('EJPT_Dashboard', 'ajax_get_job_log_details'));
 add_action('wp_ajax_ejpt_update_job_log', array('EJPT_Dashboard', 'ajax_update_job_log'));
+
+// AJAX handler for deleting a job log entry
+add_action('wp_ajax_ejpt_delete_job_log', array('EJPT_Dashboard', 'ajax_delete_job_log'));
