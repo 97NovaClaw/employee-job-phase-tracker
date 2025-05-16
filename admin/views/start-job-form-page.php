@@ -44,15 +44,15 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
 // --- END START JOB FORM DEBUGGING ---
 
 ?>
-<div class="wrap ejpt-start-job-form-page">
+<div class="wrap oo-start-job-form-page">
     <h1><?php esc_html_e( 'Start Job Phase', 'operations-organizer' ); ?></h1>
 
     <?php if ( empty( $job_number_get ) || empty( $phase_id_get ) ): ?>
-        <div class="notice notice-error ejpt-notice"><p>
-            <?php esc_html_e( 'Error: Job Number and Phase ID must be provided in the URL and the Phase ID must be valid.', 'ejpt' ); ?>
+        <div class="notice notice-error oo-notice"><p>
+            <?php esc_html_e( 'Error: Job Number and Phase ID must be provided in the URL and the Phase ID must be valid.', 'operations-organizer' ); ?>
             <br>
-            <?php esc_html_e( 'Example QR Code URL:', 'ejpt' ); ?>
-            <code><?php echo esc_url( admin_url('admin.php?page=ejpt_start_job&job_number=YOUR_JOB_ID&phase_id=YOUR_PHASE_ID') ); ?></code>
+            <?php esc_html_e( 'Example QR Code URL:', 'operations-organizer' ); ?>
+            <code><?php echo esc_url( admin_url('admin.php?page=oo_start_job&job_number=YOUR_JOB_ID&phase_id=YOUR_PHASE_ID') ); ?></code>
         </p></div>
         <?php 
         // Do not return; allow form to show but be disabled if phase_id was bad but job_number was okay.
@@ -60,8 +60,8 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
         if (empty( $job_number_get ) || empty( $phase_id_get )) return; // Hard return if core params missing
         ?>
     <?php elseif (!$phase_valid && $phase_id_get > 0): // phase_id was given but invalid/not found ?>
-         <div class="notice notice-error ejpt-notice"><p>
-            <?php esc_html_e( 'Error: The specified Phase ID is invalid or the phase could not be found.', 'ejpt' ); ?>
+         <div class="notice notice-error oo-notice"><p>
+            <?php esc_html_e( 'Error: The specified Phase ID is invalid or the phase could not be found.', 'operations-organizer' ); ?>
         </p></div>
     <?php endif; ?>
 
@@ -71,7 +71,7 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
         <input type="hidden" name="job_number" value="<?php echo esc_attr( $job_number_get ); ?>" />
         <input type="hidden" name="phase_id" value="<?php echo esc_attr( $phase_id_get ); ?>" />
 
-        <table class="form-table ejpt-form-table">
+        <table class="form-table oo-form-table">
             <tr valign="top">
                 <th scope="row"><label for="employee_number_start"><?php esc_html_e( 'Employee Number', 'operations-organizer' ); ?></label></th>
                 <td>
@@ -79,20 +79,28 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
                 </td>
             </tr>
             <tr valign="top">
-                <th scope="row"><?php esc_html_e( 'Job Number', 'ejpt' ); ?></th>
-                <td><span class="ejpt-readonly-field"><?php echo esc_html( $job_number_get ); ?></span></td>
+                <th scope="row"><?php esc_html_e( 'Job Number', 'operations-organizer' ); ?></th>
+                <td><span class="oo-readonly-field"><?php echo esc_html( $job_number_get ); ?></span></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><?php esc_html_e( 'Phase', 'ejpt' ); ?></th>
-                <td><span class="ejpt-readonly-field"><?php echo $phase_name_display; // Already escaped or marked safe ?></span></td>
+                <th scope="row"><?php esc_html_e( 'Phase', 'operations-organizer' ); ?></th>
+                <td><span class="oo-readonly-field"><?php echo $phase_name_display; // Already escaped or marked safe ?></span></td>
+            </tr>
+            <tr valign="top" class="oo-kpi-field" data-kpi-key="boxes_completed">
+                <th scope="row"><label for="kpi_boxes_completed"><?php esc_html_e( 'Boxes Completed', 'operations-organizer' ); ?></label></th>
+                <td><input type="number" id="kpi_boxes_completed" name="kpi_data[boxes_completed]" min="0" value="0" <?php disabled($form_disabled); ?> /></td>
+            </tr>
+             <tr valign="top" class="oo-kpi-field" data-kpi-key="items_completed">
+                <th scope="row"><label for="kpi_items_completed"><?php esc_html_e( 'Items Completed', 'operations-organizer' ); ?></label></th>
+                <td><input type="number" id="kpi_items_completed" name="kpi_data[items_completed]" min="0" value="0" <?php disabled($form_disabled); ?> /></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><label for="notes_start"><?php esc_html_e( 'Notes (Optional)', 'ejpt' ); ?></label></th>
+                <th scope="row"><label for="notes_start"><?php esc_html_e( 'Notes (Optional)', 'operations-organizer' ); ?></label></th>
                 <td><textarea id="notes_start" name="notes" rows="3" class="widefat" <?php disabled($form_disabled); ?>></textarea></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><?php esc_html_e( 'Current Timestamp', 'ejpt' ); ?></th>
-                <td><span class="ejpt-readonly-field"><?php echo esc_html( $current_time_display ); ?></span> (Server time will be used on submit)</td>
+                <th scope="row"><?php esc_html_e( 'Current Timestamp', 'operations-organizer' ); ?></th>
+                <td><span class="oo-readonly-field"><?php echo esc_html( $current_time_display ); ?></span> (<?php esc_html_e('Server time will be used on submit', 'operations-organizer'); ?>)</td>
             </tr>
         </table>
         <div class="form-buttons">
@@ -105,16 +113,16 @@ jQuery(document).ready(function($) {
     // Common function to display notices (if needed on this page specifically)
     if (typeof window.showNotice !== 'function') {
         window.showNotice = function(type, message) {
-            $('.ejpt-notice').remove();
-            var noticeHtml = '<div class="notice notice-' + type + ' is-dismissible ejpt-notice"><p>' + message + '</p>' +
+            $('.oo-notice').remove();
+            var noticeHtml = '<div class="notice notice-' + type + ' is-dismissible oo-notice"><p>' + message + '</p>' +
                              '<button type="button" class="notice-dismiss"><span class="screen-reader-text">Dismiss this notice.</span></button></div>';
             $('div.wrap > h1').first().after(noticeHtml);
             setTimeout(function() {
-                $('.ejpt-notice').fadeOut('slow', function() { $(this).remove(); });
+                $('.oo-notice').fadeOut('slow', function() { $(this).remove(); });
             }, 5000);
-            $('.ejpt-notice .notice-dismiss').on('click', function(event) {
+            $('.oo-notice .notice-dismiss').on('click', function(event) {
                 event.preventDefault();
-                $(this).closest('.ejpt-notice').remove();
+                $(this).closest('.oo-notice').remove();
             });
         };
     }

@@ -13,46 +13,44 @@ if ( ! defined( 'ABSPATH' ) ) {
 global $employees, $total_employees, $current_page, $per_page, $search_term, $active_filter;
 
 ?>
-<div class="wrap ejpt-employee-management-page">
-    <h1><?php esc_html_e( 'Employee Management', 'ejpt' ); ?></h1>
+<div class="wrap oo-employee-management-page">
+    <h1><?php esc_html_e( 'Employee Management', 'operations-organizer' ); ?></h1>
 
-    <button id="openAddEmployeeModalBtn" class="page-title-action ejpt-open-modal-button" data-modal-id="addEmployeeModal">
-        <?php esc_html_e( 'Add New Employee', 'ejpt' ); ?>
-    </button>
+    <button id="openAddOOEmployeeModalBtn" class="page-title-action oo-open-modal-button" data-modal-id="addOOEmployeeModal"><?php esc_html_e( 'Add New Employee', 'operations-organizer' ); ?></button>
 
     <!-- Search and Filter Form -->
-    <form method="get" class="ejpt-filters-form">
-        <input type="hidden" name="page" value="ejpt_employees" />
+    <form method="get" class="oo-filters-form">
+        <input type="hidden" name="page" value="oo_employees" />
         <div class="wp-filter">
             <div class="filter-items">
-                <label for="status_filter" class="screen-reader-text"><?php esc_html_e('Filter by status', 'ejpt');?></label>
+                <label for="status_filter" class="screen-reader-text"><?php esc_html_e('Filter by status', 'operations-organizer');?></label>
                 <select name="status_filter" id="status_filter">
-                    <option value="all" <?php selected($active_filter, 'all'); ?>><?php esc_html_e('All Statuses', 'ejpt');?></option>
-                    <option value="active" <?php selected($active_filter, 'active'); ?>><?php esc_html_e('Active', 'ejpt');?></option>
-                    <option value="inactive" <?php selected($active_filter, 'inactive'); ?>><?php esc_html_e('Inactive', 'ejpt');?></option>
+                    <option value="all" <?php selected($active_filter, 'all'); ?>><?php esc_html_e('All Statuses', 'operations-organizer');?></option>
+                    <option value="active" <?php selected($active_filter, 'active'); ?>><?php esc_html_e('Active', 'operations-organizer');?></option>
+                    <option value="inactive" <?php selected($active_filter, 'inactive'); ?>><?php esc_html_e('Inactive', 'operations-organizer');?></option>
                 </select>
-                <input type="submit" name="filter_action" class="button" value="<?php esc_attr_e('Filter', 'ejpt');?>">
+                <input type="submit" name="filter_action" class="button" value="<?php esc_attr_e('Filter', 'operations-organizer');?>">
             </div>
             <p class="search-box">
-                <label class="screen-reader-text" for="employee-search-input"><?php esc_html_e( 'Search Employees:', 'ejpt' ); ?></label>
-                <input type="search" id="employee-search-input" name="s" value="<?php echo esc_attr( $search_term ); ?>" placeholder="<?php esc_attr_e( 'Search by Name/Number', 'ejpt' ); ?>"/>
-                <input type="submit" id="search-submit" class="button" value="<?php esc_attr_e( 'Search Employees', 'ejpt' ); ?>" />
+                <label class="screen-reader-text" for="employee-search-input"><?php esc_html_e( 'Search Employees:', 'operations-organizer' ); ?></label>
+                <input type="search" id="employee-search-input" name="s" value="<?php echo esc_attr( $search_term ); ?>" placeholder="<?php esc_attr_e( 'Search by Name/Number', 'operations-organizer' ); ?>"/>
+                <input type="submit" id="search-submit" class="button" value="<?php esc_attr_e( 'Search Employees', 'operations-organizer' ); ?>" />
             </p>
         </div>
     </form>
     <div class="clear"></div>
 
-    <div id="ejpt-employee-list-table-wrapper">
+    <div id="oo-employee-list-table-wrapper">
         <table class="wp-list-table widefat fixed striped table-view-list employees">
             <thead>
                 <tr>
                     <?php 
                     $columns = [
-                        'employee_number' => __('Emp. Number', 'ejpt'),
-                        'first_name' => __('First Name', 'ejpt'),
-                        'last_name' => __('Last Name', 'ejpt'),
-                        'status' => __('Status', 'ejpt'),
-                        'actions' => __('Actions', 'ejpt'),
+                        'employee_number' => __('Emp. Number', 'operations-organizer'),
+                        'first_name' => __('First Name', 'operations-organizer'),
+                        'last_name' => __('Last Name', 'operations-organizer'),
+                        'status' => __('Status', 'operations-organizer'),
+                        'actions' => __('Actions', 'operations-organizer'),
                     ];
                     $current_orderby = isset($GLOBALS['orderby']) ? $GLOBALS['orderby'] : 'last_name';
                     $current_order = isset($GLOBALS['order']) ? strtolower($GLOBALS['order']) : 'asc';
@@ -78,35 +76,35 @@ global $employees, $total_employees, $current_page, $per_page, $search_term, $ac
                 if ( ! empty( $employees ) ) : ?>
                     <?php foreach ( $employees as $employee ) : ?>
                         <tr id="employee-<?php echo $employee->employee_id; ?>" class="<?php echo $employee->is_active ? 'active' : 'inactive'; ?>">
-                            <td class="employee_number column-employee_number" data-colname="<?php esc_attr_e('Emp. Number', 'ejpt'); ?>">
+                            <td class="employee_number column-employee_number" data-colname="<?php esc_attr_e('Emp. Number', 'operations-organizer'); ?>">
                                 <?php echo esc_html( $employee->employee_number ); ?>
                             </td>
-                            <td class="first_name column-first_name" data-colname="<?php esc_attr_e('First Name', 'ejpt'); ?>">
+                            <td class="first_name column-first_name" data-colname="<?php esc_attr_e('First Name', 'operations-organizer'); ?>">
                                 <?php echo esc_html( $employee->first_name ); ?>
                             </td>
-                            <td class="last_name column-last_name" data-colname="<?php esc_attr_e('Last Name', 'ejpt'); ?>">
+                            <td class="last_name column-last_name" data-colname="<?php esc_attr_e('Last Name', 'operations-organizer'); ?>">
                                 <?php echo esc_html( $employee->last_name ); ?>
                             </td>
-                            <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'ejpt'); ?>">
+                            <td class="status column-status" data-colname="<?php esc_attr_e('Status', 'operations-organizer'); ?>">
                                 <?php if ( $employee->is_active ) : ?>
-                                    <span style="color: green;"><?php esc_html_e( 'Active', 'ejpt' ); ?></span>
+                                    <span style="color: green;"><?php esc_html_e( 'Active', 'operations-organizer' ); ?></span>
                                 <?php else : ?>
-                                    <span style="color: red;"><?php esc_html_e( 'Inactive', 'ejpt' ); ?></span>
+                                    <span style="color: red;"><?php esc_html_e( 'Inactive', 'operations-organizer' ); ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td class="actions column-actions" data-colname="<?php esc_attr_e('Actions', 'ejpt'); ?>">
-                                <button class="button-secondary ejpt-edit-employee-button" data-employee-id="<?php echo esc_attr( $employee->employee_id ); ?>"><?php esc_html_e('Edit', 'ejpt'); ?></button>
+                            <td class="actions column-actions" data-colname="<?php esc_attr_e('Actions', 'operations-organizer'); ?>">
+                                <button class="button-secondary oo-edit-employee-button" data-employee-id="<?php echo esc_attr( $employee->employee_id ); ?>"><?php esc_html_e('Edit', 'operations-organizer'); ?></button>
                                 <?php if ( $employee->is_active ) : ?>
-                                    <button class="button-secondary ejpt-toggle-status-employee-button ejpt-deactivate" data-employee-id="<?php echo esc_attr( $employee->employee_id ); ?>" data-new-status="0"><?php esc_html_e('Deactivate', 'ejpt'); ?></button>
+                                    <button class="button-secondary oo-toggle-status-employee-button ejpt-deactivate" data-employee-id="<?php echo esc_attr( $employee->employee_id ); ?>" data-new-status="0"><?php esc_html_e('Deactivate', 'operations-organizer'); ?></button>
                                 <?php else : ?>
-                                    <button class="button-secondary ejpt-toggle-status-employee-button ejpt-activate" data-employee-id="<?php echo esc_attr( $employee->employee_id ); ?>" data-new-status="1"><?php esc_html_e('Activate', 'ejpt'); ?></button>
+                                    <button class="button-secondary oo-toggle-status-employee-button ejpt-activate" data-employee-id="<?php echo esc_attr( $employee->employee_id ); ?>" data-new-status="1"><?php esc_html_e('Activate', 'operations-organizer'); ?></button>
                                 <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else : ?>
                     <tr>
-                        <td colspan="<?php echo count($columns); ?>"><?php esc_html_e( 'No employees found.', 'ejpt' ); ?></td>
+                        <td colspan="<?php echo count($columns); ?>"><?php esc_html_e( 'No employees found.', 'operations-organizer' ); ?></td>
                     </tr>
                 <?php endif; ?>
             </tbody>
@@ -143,27 +141,27 @@ global $employees, $total_employees, $current_page, $per_page, $search_term, $ac
     ?>
 
     <!-- Add Employee Modal -->
-    <div id="addEmployeeModal" class="ejpt-modal" style="display:none;">
-        <div class="ejpt-modal-content">
-            <span class="ejpt-close-button">&times;</span>
-            <h2><?php esc_html_e( 'Add New Employee', 'ejpt' ); ?></h2>
+    <div id="addOOEmployeeModal" class="oo-modal" style="display:none;">
+        <div class="oo-modal-content">
+            <span class="oo-close-button">&times;</span>
+            <h2><?php esc_html_e( 'Add New Employee', 'operations-organizer' ); ?></h2>
             <form id="oo-add-employee-form">
                 <?php wp_nonce_field( 'oo_add_employee_nonce', 'oo_add_employee_nonce' ); ?>
-                <table class="form-table ejpt-form-table">
+                <table class="form-table oo-form-table">
                     <tr valign="top">
-                        <th scope="row"><label for="employee_number_add"><?php esc_html_e( 'Employee Number', 'ejpt' ); ?></label></th>
+                        <th scope="row"><label for="employee_number_add"><?php esc_html_e( 'Employee Number', 'operations-organizer' ); ?></label></th>
                         <td><input type="text" id="employee_number_add" name="employee_number" required /></td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row"><label for="first_name_add"><?php esc_html_e( 'First Name', 'ejpt' ); ?></label></th>
+                        <th scope="row"><label for="first_name_add"><?php esc_html_e( 'First Name', 'operations-organizer' ); ?></label></th>
                         <td><input type="text" id="first_name_add" name="first_name" required /></td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row"><label for="last_name_add"><?php esc_html_e( 'Last Name', 'ejpt' ); ?></label></th>
+                        <th scope="row"><label for="last_name_add"><?php esc_html_e( 'Last Name', 'operations-organizer' ); ?></label></th>
                         <td><input type="text" id="last_name_add" name="last_name" required /></td>
                     </tr>
                 </table>
-                <?php submit_button( __( 'Add Employee', 'ejpt' ), 'primary', 'submit_add_employee' ); ?>
+                <?php submit_button( __( 'Add Employee', 'operations-organizer' ), 'primary', 'submit_add_employee' ); ?>
             </form>
         </div>
     </div>

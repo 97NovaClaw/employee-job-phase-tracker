@@ -29,7 +29,7 @@ $current_time_display = ejpt_get_current_timestamp_display();
 $form_disabled = empty( $job_number_get ) || !$phase_valid;
 
 ?>
-<div class="wrap ejpt-stop-job-form-page">
+<div class="wrap oo-stop-job-form-page">
     <h1><?php esc_html_e( 'Stop Job Phase & Record KPIs', 'operations-organizer' ); ?></h1>
 
     <?php if ( empty( $job_number_get ) || empty( $phase_id_get ) ): ?>
@@ -53,36 +53,34 @@ $form_disabled = empty( $job_number_get ) || !$phase_valid;
         <input type="hidden" name="job_number" value="<?php echo esc_attr( $job_number_get ); ?>" />
         <input type="hidden" name="phase_id" value="<?php echo esc_attr( $phase_id_get ); ?>" />
 
-        <table class="form-table ejpt-form-table">
+        <table class="form-table oo-form-table">
             <tr valign="top">
                 <th scope="row"><label for="employee_number_stop"><?php esc_html_e( 'Employee Number', 'operations-organizer' ); ?></label></th>
-                <td>
-                    <input type="text" id="employee_number_stop" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'operations-organizer'); ?>" />
-                </td>
+                <td><input type="text" id="employee_number_stop" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'operations-organizer'); ?>" /></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><?php esc_html_e( 'Job Number', 'ejpt' ); ?></th>
-                <td><span class="ejpt-readonly-field"><?php echo esc_html( $job_number_get ); ?></span></td>
+                <th scope="row"><?php esc_html_e( 'Job Number', 'operations-organizer' ); ?></th>
+                <td><span class="oo-readonly-field"><?php echo esc_html( $job_number_get ); ?></span></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><?php esc_html_e( 'Phase', 'ejpt' ); ?></th>
-                <td><span class="ejpt-readonly-field"><?php echo $phase_name_display; // Already escaped ?></span></td>
+                <th scope="row"><?php esc_html_e( 'Phase', 'operations-organizer' ); ?></th>
+                <td><span class="oo-readonly-field"><?php echo $phase_name_display; ?></span></td>
             </tr>
-            <tr valign="top">
-                <th scope="row"><label for="boxes_completed"><?php esc_html_e( 'Boxes Completed', 'ejpt' ); ?></label></th>
-                <td><input type="number" id="boxes_completed" name="boxes_completed" min="0" step="1" value="0" required <?php disabled($form_disabled); ?> /></td>
+            <tr valign="top" class="oo-kpi-field" data-kpi-key="boxes_completed">
+                <th scope="row"><label for="kpi_stop_boxes_completed"><?php esc_html_e( 'Boxes Completed', 'operations-organizer' ); ?></label></th>
+                <td><input type="number" id="kpi_stop_boxes_completed" name="kpi_data[boxes_completed]" min="0" value="0" required <?php disabled($form_disabled); ?> /></td>
             </tr>
-            <tr valign="top">
-                <th scope="row"><label for="items_completed"><?php esc_html_e( 'Items Completed', 'ejpt' ); ?></label></th>
-                <td><input type="number" id="items_completed" name="items_completed" min="0" step="1" value="0" required <?php disabled($form_disabled); ?> /></td>
+            <tr valign="top" class="oo-kpi-field" data-kpi-key="items_completed">
+                <th scope="row"><label for="kpi_stop_items_completed"><?php esc_html_e( 'Items Completed', 'operations-organizer' ); ?></label></th>
+                <td><input type="number" id="kpi_stop_items_completed" name="kpi_data[items_completed]" min="0" value="0" required <?php disabled($form_disabled); ?> /></td>
             </tr>
              <tr valign="top">
-                <th scope="row"><label for="notes_stop"><?php esc_html_e( 'Notes (Optional)', 'ejpt' ); ?></label></th>
+                <th scope="row"><label for="notes_stop"><?php esc_html_e( 'Notes (Optional)', 'operations-organizer' ); ?></label></th>
                 <td><textarea id="notes_stop" name="notes" rows="3" class="widefat" <?php disabled($form_disabled); ?>></textarea></td>
             </tr>
             <tr valign="top">
-                <th scope="row"><?php esc_html_e( 'Current Timestamp', 'ejpt' ); ?></th>
-                <td><span class="ejpt-readonly-field"><?php echo esc_html( $current_time_display ); ?></span> (Server time will be used on submit)</td>
+                <th scope="row"><?php esc_html_e( 'Current Timestamp', 'operations-organizer' ); ?></th>
+                <td><span class="oo-readonly-field"><?php echo esc_html( $current_time_display ); ?></span> (<?php esc_html_e('Server time will be used on submit', 'operations-organizer'); ?>)</td>
             </tr>
         </table>
         <div class="form-buttons">
