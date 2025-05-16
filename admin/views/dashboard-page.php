@@ -161,7 +161,7 @@ jQuery(document).ready(function($) {
         processing: true,
         serverSide: true,
         ajax: {
-            url: ejpt_data.ajax_url,
+            url: oo_data.ajax_url,
             type: 'POST',
             data: function(d) { 
                 d.action = 'ejpt_get_dashboard_data';
@@ -202,8 +202,8 @@ jQuery(document).ready(function($) {
                 searchable: false,
                 className: 'ejpt-actions-column',
                 render: function(data, type, row) {
-                    let buttons = '<button class="button button-secondary ejpt-edit-log-button" data-log-id="' + row.log_id + '"><?php echo esc_js(__("Edit", "ejpt")); ?></button>';
-                    buttons += ' <button class="button button-link-delete ejpt-delete-log-button" data-log-id="' + row.log_id + '" style="color:#b32d2e;margin-left:5px;"><?php echo esc_js(__("Delete", "ejpt")); ?></button>';
+                    let buttons = '<button class="button button-secondary oo-edit-log-button" data-log-id="' + row.log_id + '"><?php echo esc_js(__("Edit", "ejpt")); ?></button>';
+                    buttons += ' <button class="button button-link-delete oo-delete-log-button" data-log-id="' + row.log_id + '" style="color:#b32d2e;margin-left:5px;"><?php echo esc_js(__("Delete", "ejpt")); ?></button>';
                     return buttons;
                 }
             }
@@ -263,7 +263,7 @@ jQuery(document).ready(function($) {
         delete exportParams.start;
         delete exportParams.search;
 
-        $.post(ejpt_data.ajax_url, exportParams, function(response) {
+        $.post(oo_data.ajax_url, exportParams, function(response) {
             if (response.data && response.data.length > 0) {
                 var csvData = [];
                 var headers = [
@@ -365,7 +365,7 @@ jQuery(document).ready(function($) {
     var editLogForm = $('#ejpt-edit-log-form');
 
     // Handle click on "Edit" button in DataTable
-    $('#ejpt-dashboard-table tbody').on('click', '.ejpt-edit-log-button', function () {
+    $('#ejpt-dashboard-table tbody').on('click', '.oo-edit-log-button', function () {
         console.log('Dashboard JS: Edit button event triggered.'); // DEBUG Line 1
         var logId = $(this).data('log-id');
         // ejpt_log('Edit button clicked for log ID: ' + logId, 'Dashboard JS'); // Server-side log via separate mechanism if needed
@@ -382,11 +382,11 @@ jQuery(document).ready(function($) {
         var $clickedButton = $(this);
 
         $.ajax({
-            url: ejpt_data.ajax_url,
+            url: oo_data.ajax_url,
             type: 'POST',
             data: {
-                action: 'ejpt_get_job_log_details',
-                nonce: '<?php echo wp_create_nonce("ejpt_edit_log_nonce"); ?>',
+                action: 'oo_get_job_log_details',
+                nonce: oo_data.nonce_edit_log,
                 log_id: logId
             },
             dataType: 'json',
@@ -428,11 +428,11 @@ jQuery(document).ready(function($) {
         $submitButton.prop('disabled', true).val('<?php echo esc_js(__("Saving...", "ejpt")); ?>');
         
         var formData = $form.serialize(); 
-        formData += '&action=ejpt_update_job_log';
+        formData += '&action=oo_update_job_log';
 
         console.log('Dashboard JS: Submitting Edit Log Form Data:', formData); // DEBUG: Changed from ejpt_log
 
-        $.post(ejpt_data.ajax_url, formData)
+        $.post(oo_data.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
@@ -453,7 +453,7 @@ jQuery(document).ready(function($) {
     });
 
     // Handle click on "Delete" button in DataTable
-    $('#ejpt-dashboard-table tbody').on('click', '.ejpt-delete-log-button', function () {
+    $('#ejpt-dashboard-table tbody').on('click', '.oo-delete-log-button', function () {
         var logId = $(this).data('log-id');
         console.log('Dashboard JS: Delete button clicked for log ID:', logId);
 
@@ -471,11 +471,11 @@ jQuery(document).ready(function($) {
         var $clickedButton = $(this);
 
         $.ajax({
-            url: ejpt_data.ajax_url,
+            url: oo_data.ajax_url,
             type: 'POST',
             data: {
-                action: 'ejpt_delete_job_log',
-                nonce: '<?php echo wp_create_nonce("ejpt_delete_log_nonce"); ?>',
+                action: 'oo_delete_job_log',
+                nonce: oo_data.nonce_delete_log,
                 log_id: logId
             },
             dataType: 'json',
@@ -509,7 +509,7 @@ jQuery(document).ready(function($) {
         <span class="ejpt-close-button">&times;</span>
         <h2><?php esc_html_e( 'Edit Job Log Entry', 'ejpt' ); ?></h2>
         <form id="ejpt-edit-log-form">
-            <?php wp_nonce_field( 'ejpt_edit_log_nonce', 'ejpt_edit_log_nonce_field' ); ?>
+            <?php wp_nonce_field( 'oo_edit_log_nonce', 'oo_edit_log_nonce_field' ); ?>
             <input type="hidden" id="edit_log_id" name="edit_log_id" value="" />
             <table class="form-table ejpt-form-table">
                 <tr valign="top">

@@ -42,14 +42,14 @@ jQuery(document).ready(function($) {
     }, 250); // Debounce for 250ms to prevent multiple rapid notices
 
     // AJAX form submission for Add Employee
-    $('body').on('submit', '#ejpt-add-employee-form', function(e) {
+    $('body').on('submit', '#oo-add-employee-form', function(e) {
         e.preventDefault();
         var $form = $(this);
         var $submitButton = $form.find('input[type="submit"]');
         $submitButton.prop('disabled', true);
 
         var formData = $form.serialize();
-        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_add_employee', function(response) {
+        $.post(oo_data.ajax_url, formData + '&action=oo_add_employee', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 $form[0].reset();
@@ -68,14 +68,14 @@ jQuery(document).ready(function($) {
     });
 
     // AJAX form submission for Edit Employee
-    $('body').on('submit', '#ejpt-edit-employee-form', function(e) {
+    $('body').on('submit', '#oo-edit-employee-form', function(e) {
         e.preventDefault();
         var $form = $(this);
         var $submitButton = $form.find('input[type="submit"]');
         $submitButton.prop('disabled', true);
         
         var formData = $form.serialize();
-        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_update_employee', function(response) {
+        $.post(oo_data.ajax_url, formData + '&action=oo_update_employee', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 if (typeof window.loadEmployeesTable === 'function') {
@@ -93,14 +93,14 @@ jQuery(document).ready(function($) {
     });
 
     // AJAX form submission for Add Phase
-    $('body').on('submit', '#ejpt-add-phase-form', function(e) {
+    $('body').on('submit', '#oo-add-phase-form', function(e) {
         e.preventDefault();
         var $form = $(this);
         var $submitButton = $form.find('input[type="submit"]');
         $submitButton.prop('disabled', true);
 
         var formData = $form.serialize();
-        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_add_phase', function(response) {
+        $.post(oo_data.ajax_url, formData + '&action=oo_add_phase', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 $form[0].reset();
@@ -119,14 +119,14 @@ jQuery(document).ready(function($) {
     });
 
     // AJAX form submission for Edit Phase
-    $('body').on('submit', '#ejpt-edit-phase-form', function(e) {
+    $('body').on('submit', '#oo-edit-phase-form', function(e) {
         e.preventDefault();
         var $form = $(this);
         var $submitButton = $form.find('input[type="submit"]');
         $submitButton.prop('disabled', true);
 
         var formData = $form.serialize();
-        $.post(ejpt_data.ajax_url, formData + '&action=ejpt_update_phase', function(response) {
+        $.post(oo_data.ajax_url, formData + '&action=oo_update_phase', function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);
                 if (typeof window.loadPhasesTable === 'function') {
@@ -161,20 +161,20 @@ jQuery(document).ready(function($) {
     });
     
     // Start Job Form AJAX Submission
-    $('body').on('submit', '#ejpt-start-job-form', function(e) {
+    $('body').on('submit', '#oo-start-job-form', function(e) {
         e.preventDefault();
         var $form = $(this);
         var $submitButton = $form.find('#start-job-submit');
         $submitButton.prop('disabled', true).text('Starting...');
         
         var formData = $form.serialize();
-        formData += '&action=ejpt_start_job_action';
+        formData += '&action=oo_start_job_action';
 
-        $.post(ejpt_data.ajax_url, formData)
+        $.post(oo_data.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
-                    window.location.href = ejpt_data.dashboard_url;
+                    window.location.href = oo_data.dashboard_url;
                 } else {
                     showNotice('error', response.data.message || 'An unknown error occurred.');
                     $submitButton.prop('disabled', false).text('Start Job'); // Re-enable only on error
@@ -187,20 +187,20 @@ jQuery(document).ready(function($) {
     });
 
     // Stop Job Form AJAX Submission
-    $('body').on('submit', '#ejpt-stop-job-form', function(e) {
+    $('body').on('submit', '#oo-stop-job-form', function(e) {
         e.preventDefault();
         var $form = $(this);
         var $submitButton = $form.find('#stop-job-submit');
         $submitButton.prop('disabled', true).text('Stopping...');
         
         var formData = $form.serialize();
-        formData += '&action=ejpt_stop_job_action';
+        formData += '&action=oo_stop_job_action';
 
-        $.post(ejpt_data.ajax_url, formData)
+        $.post(oo_data.ajax_url, formData)
             .done(function(response) {
                 if (response.success) {
                     showNotice('success', response.data.message);
-                    window.location.href = ejpt_data.dashboard_url;
+                    window.location.href = oo_data.dashboard_url;
                 } else {
                     showNotice('error', response.data.message || 'An unknown error occurred.');
                     $submitButton.prop('disabled', false).text('Stop Job & Save'); // Re-enable only on error

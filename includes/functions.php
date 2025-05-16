@@ -12,8 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array Array of employee data (id, name).
  */
-function ejpt_get_active_employees_for_select() {
-    $employees = EJPT_DB::get_employees( array( 'is_active' => 1, 'orderby' => 'last_name', 'order' => 'ASC', 'number' => -1 ) );
+function oo_get_active_employees_for_select() {
+    $employees = OO_DB::get_employees( array( 'is_active' => 1, 'orderby' => 'last_name', 'order' => 'ASC', 'number' => -1 ) );
     $options = array();
     if ( $employees ) {
         foreach ( $employees as $employee ) {
@@ -27,12 +27,17 @@ function ejpt_get_active_employees_for_select() {
 }
 
 /**
- * Get a list of active phases for use in dropdowns.
+ * Get a list of active phases for a specific stream type (or all active phases if stream_type_id is null).
  *
+ * @param int|null $stream_type_id Optional. The ID of the stream type.
  * @return array Array of phase data (id, name).
  */
-function ejpt_get_active_phases_for_select() {
-    $phases = EJPT_DB::get_phases( array( 'is_active' => 1, 'orderby' => 'phase_name', 'order' => 'ASC', 'number' => -1 ) );
+function oo_get_active_phases_for_select($stream_type_id = null) {
+    $args = array( 'is_active' => 1, 'orderby' => 'sort_order', 'order' => 'ASC', 'number' => -1 );
+    if ($stream_type_id) {
+        $args['stream_type_id'] = $stream_type_id;
+    }
+    $phases = OO_DB::get_phases( $args );
     $options = array();
     if ( $phases ) {
         foreach ( $phases as $phase ) {
@@ -49,28 +54,28 @@ function ejpt_get_active_phases_for_select() {
  * Get current timestamp for display, respecting WordPress timezone settings.
  * @return string Formatted date and time.
  */
-function ejpt_get_current_timestamp_display() {
+function oo_get_current_timestamp_display() {
     return wp_date(get_option('date_format') . ' ' . get_option('time_format'), current_time('timestamp'), wp_timezone());
 }
 
 /**
  * Get the capability required to manage plugin settings and view full dashboards.
- * Filters `ejpt_manage_capability` can be used to change this.
+ * Filters `oo_manage_capability` can be used to change this.
  * @return string The capability string.
  */
-function ejpt_get_capability() {
-    return apply_filters('ejpt_manage_capability', 'manage_options');
+function oo_get_capability() {
+    return apply_filters('oo_manage_capability', 'manage_options');
 }
 
 /**
  * Get the capability required to access the start/stop job forms (e.g., via QR code).
- * Filters `ejpt_form_access_capability` can be used to change this.
+ * Filters `oo_form_access_capability` can be used to change this.
  * @return string The capability string.
  */
-function ejpt_get_form_access_capability() {
+function oo_get_form_access_capability() {
     // 'read' means any logged-in user. 
     // Consider creating a custom role/capability for more fine-grained control.
-    return apply_filters('ejpt_form_access_capability', 'read'); 
+    return apply_filters('oo_form_access_capability', 'read'); 
 }
 
 /**
@@ -80,13 +85,13 @@ function ejpt_get_form_access_capability() {
  * @param mixed  $message The message or data to log.
  * @param string $context Optional context for the log entry (e.g., function name).
  */
-function ejpt_log($message, $context = '') {
+function oo_log($message, $context = '') {
     if (!(defined('WP_DEBUG') && WP_DEBUG === true)) {
         return;
     }
 
     $timestamp = wp_date('Y-m-d H:i:s e');
-    $log_entry_prefix = '[' . $timestamp . '] [EJPT_DEBUG';
+    $log_entry_prefix = '[' . $timestamp . '] [OO_DEBUG';
 
     if (!empty($context)) {
         $log_entry_prefix .= ' - ' . (is_scalar($context) ? $context : print_r($context, true));
@@ -116,7 +121,7 @@ function ejpt_log($message, $context = '') {
 
     $log_entry = $log_entry_prefix . $message_str . "\n";
 
-    $log_dir = EJPT_PLUGIN_DIR . 'debug';
+    $log_dir = OO_PLUGIN_DIR . 'debug';
     $log_file = $log_dir . '/debug.log';
 
     if (!file_exists($log_dir)) {

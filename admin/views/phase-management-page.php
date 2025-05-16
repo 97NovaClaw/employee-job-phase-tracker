@@ -136,9 +136,24 @@ global $phases, $total_phases, $current_page, $per_page, $search_term, $active_f
         <div class="ejpt-modal-content">
             <span class="ejpt-close-button">&times;</span>
             <h2><?php esc_html_e( 'Add New Phase', 'ejpt' ); ?></h2>
-            <form id="ejpt-add-phase-form">
-                <?php wp_nonce_field( 'ejpt_add_phase_nonce', 'ejpt_add_phase_nonce' ); ?>
+            <form id="oo-add-phase-form">
+                <?php wp_nonce_field( 'oo_add_phase_nonce', 'oo_add_phase_nonce' ); ?>
                 <table class="form-table ejpt-form-table">
+                    <tr valign="top">
+                        <th scope="row"><label for="stream_type_id_add"><?php esc_html_e( 'Stream Type', 'operations-organizer' ); ?></label></th>
+                        <td>
+                            <select id="stream_type_id_add" name="stream_type_id" required>
+                                <option value=""><?php esc_html_e('-- Select Stream Type --', 'operations-organizer'); ?></option>
+                                <?php foreach ($GLOBALS['stream_types'] as $st) : ?>
+                                    <option value="<?php echo esc_attr($st->stream_type_id); ?>"><?php echo esc_html($st->stream_type_name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row"><label for="phase_slug_add"><?php esc_html_e( 'Phase Slug', 'operations-organizer' ); ?></label></th>
+                        <td><input type="text" id="phase_slug_add" name="phase_slug" required /></td>
+                    </tr>
                     <tr valign="top">
                         <th scope="row"><label for="phase_name_add"><?php esc_html_e( 'Phase Name', 'ejpt' ); ?></label></th>
                         <td><input type="text" id="phase_name_add" name="phase_name" required /></td>
@@ -158,10 +173,25 @@ global $phases, $total_phases, $current_page, $per_page, $search_term, $active_f
         <div class="ejpt-modal-content">
             <span class="ejpt-close-button">&times;</span>
             <h2><?php esc_html_e( 'Edit Phase', 'ejpt' ); ?></h2>
-            <form id="ejpt-edit-phase-form">
-                <?php wp_nonce_field( 'ejpt_edit_phase_nonce', 'ejpt_edit_phase_nonce' ); ?>
+            <form id="oo-edit-phase-form">
+                <?php wp_nonce_field( 'oo_edit_phase_nonce', 'oo_edit_phase_nonce' ); ?>
                 <input type="hidden" id="edit_phase_id" name="edit_phase_id" value="" />
                 <table class="form-table ejpt-form-table">
+                    <tr valign="top">
+                        <th scope="row"><label for="edit_stream_type_id"><?php esc_html_e( 'Stream Type', 'operations-organizer' ); ?></label></th>
+                        <td>
+                            <select id="edit_stream_type_id" name="edit_stream_type_id" required>
+                                <option value=""><?php esc_html_e('-- Select Stream Type --', 'operations-organizer'); ?></option>
+                                <?php foreach ($GLOBALS['stream_types'] as $st) : ?>
+                                    <option value="<?php echo esc_attr($st->stream_type_id); ?>"><?php echo esc_html($st->stream_type_name); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row"><label for="edit_phase_slug"><?php esc_html_e( 'Phase Slug', 'operations-organizer' ); ?></label></th>
+                        <td><input type="text" id="edit_phase_slug" name="edit_phase_slug" required /></td>
+                    </tr>
                     <tr valign="top">
                         <th scope="row"><label for="edit_phase_name"><?php esc_html_e( 'Phase Name', 'ejpt' ); ?></label></th>
                         <td><input type="text" id="edit_phase_name" name="edit_phase_name" required /></td>
@@ -188,15 +218,18 @@ jQuery(document).ready(function($) {
     // Handle "Edit Phase" button click
     $('.ejpt-edit-phase-button').on('click', function() {
         var phaseId = $(this).data('phase-id');
-        $.post(ejpt_data.ajax_url, {
-            action: 'ejpt_get_phase',
+        $.post(oo_data.ajax_url, {
+            action: 'oo_get_phase',
             phase_id: phaseId,
-            _ajax_nonce_get_phase: '<?php echo wp_create_nonce("ejpt_edit_phase_nonce"); ?>'
+            _ajax_nonce_get_phase: oo_data.nonce_edit_phase
         }, function(response) {
             if (response.success) {
                 $('#edit_phase_id').val(response.data.phase_id);
+                $('#edit_stream_type_id').val(response.data.stream_type_id);
+                $('#edit_phase_slug').val(response.data.phase_slug);
                 $('#edit_phase_name').val(response.data.phase_name);
                 $('#edit_phase_description').val(response.data.phase_description);
+                $('#edit_sort_order').val(response.data.sort_order);
                 $('#editPhaseModal').show();
             } else {
                  showNotice('error', response.data.message || 'Could not load phase data.');
@@ -218,11 +251,11 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        $.post(ejpt_data.ajax_url, {
-            action: 'ejpt_toggle_phase_status',
+        $.post(oo_data.ajax_url, {
+            action: 'oo_toggle_phase_status',
             phase_id: phaseId,
             is_active: newStatus,
-            _ajax_nonce: '<?php echo wp_create_nonce("ejpt_toggle_status_nonce"); ?>'
+            _ajax_nonce: oo_data.nonce_toggle_status
         }, function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);

@@ -147,8 +147,8 @@ global $employees, $total_employees, $current_page, $per_page, $search_term, $ac
         <div class="ejpt-modal-content">
             <span class="ejpt-close-button">&times;</span>
             <h2><?php esc_html_e( 'Add New Employee', 'ejpt' ); ?></h2>
-            <form id="ejpt-add-employee-form">
-                <?php wp_nonce_field( 'ejpt_add_employee_nonce', 'ejpt_add_employee_nonce' ); ?>
+            <form id="oo-add-employee-form">
+                <?php wp_nonce_field( 'oo_add_employee_nonce', 'oo_add_employee_nonce' ); ?>
                 <table class="form-table ejpt-form-table">
                     <tr valign="top">
                         <th scope="row"><label for="employee_number_add"><?php esc_html_e( 'Employee Number', 'ejpt' ); ?></label></th>
@@ -173,8 +173,8 @@ global $employees, $total_employees, $current_page, $per_page, $search_term, $ac
         <div class="ejpt-modal-content">
             <span class="ejpt-close-button">&times;</span>
             <h2><?php esc_html_e( 'Edit Employee', 'ejpt' ); ?></h2>
-            <form id="ejpt-edit-employee-form">
-                <?php wp_nonce_field( 'ejpt_edit_employee_nonce', 'ejpt_edit_employee_nonce' ); ?>
+            <form id="oo-edit-employee-form">
+                <?php wp_nonce_field( 'oo_edit_employee_nonce', 'oo_edit_employee_nonce' ); ?>
                 <input type="hidden" id="edit_employee_id" name="edit_employee_id" value="" />
                 <table class="form-table ejpt-form-table">
                     <tr valign="top">
@@ -213,10 +213,10 @@ jQuery(document).ready(function($) {
     $('.ejpt-edit-employee-button').on('click', function() {
         var employeeId = $(this).data('employee-id');
         
-        $.post(ejpt_data.ajax_url, {
-            action: 'ejpt_get_employee',
+        $.post(oo_data.ajax_url, {
+            action: 'oo_get_employee',
             employee_id: employeeId,
-            _ajax_nonce_get_employee: '<?php echo wp_create_nonce('ejpt_edit_employee_nonce'); ?>' 
+            _ajax_nonce_get_employee: oo_data.nonce_edit_employee
         }, function(response) {
             if (response.success) {
                 $('#edit_employee_id').val(response.data.employee_id);
@@ -244,11 +244,11 @@ jQuery(document).ready(function($) {
             return;
         }
         
-        $.post(ejpt_data.ajax_url, {
-            action: 'ejpt_toggle_employee_status',
+        $.post(oo_data.ajax_url, {
+            action: 'oo_toggle_employee_status',
             employee_id: employeeId,
             is_active: newStatus,
-            _ajax_nonce: '<?php echo wp_create_nonce('ejpt_toggle_status_nonce'); ?>'
+            _ajax_nonce: oo_data.nonce_toggle_status
         }, function(response) {
             if (response.success) {
                 showNotice('success', response.data.message);

@@ -30,7 +30,7 @@ $form_disabled = empty( $job_number_get ) || !$phase_valid;
 
 ?>
 <div class="wrap ejpt-stop-job-form-page">
-    <h1><?php esc_html_e( 'Stop Job Phase & Record KPIs', 'ejpt' ); ?></h1>
+    <h1><?php esc_html_e( 'Stop Job Phase & Record KPIs', 'operations-organizer' ); ?></h1>
 
     <?php if ( empty( $job_number_get ) || empty( $phase_id_get ) ): ?>
         <div class="notice notice-error ejpt-notice"><p>
@@ -48,16 +48,16 @@ $form_disabled = empty( $job_number_get ) || !$phase_valid;
         </p></div>
     <?php endif; ?>
 
-    <form id="ejpt-stop-job-form" method="post">
-        <?php wp_nonce_field( 'ejpt_stop_job_nonce', 'ejpt_stop_job_nonce' ); ?>
+    <form id="oo-stop-job-form" method="post">
+        <?php wp_nonce_field( 'oo_stop_job_nonce', 'oo_stop_job_nonce' ); ?>
         <input type="hidden" name="job_number" value="<?php echo esc_attr( $job_number_get ); ?>" />
         <input type="hidden" name="phase_id" value="<?php echo esc_attr( $phase_id_get ); ?>" />
 
         <table class="form-table ejpt-form-table">
             <tr valign="top">
-                <th scope="row"><label for="employee_number_stop"><?php esc_html_e( 'Employee Number', 'ejpt' ); ?></label></th>
+                <th scope="row"><label for="employee_number_stop"><?php esc_html_e( 'Employee Number', 'operations-organizer' ); ?></label></th>
                 <td>
-                    <input type="text" id="employee_number_stop" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'ejpt'); ?>" />
+                    <input type="text" id="employee_number_stop" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'operations-organizer'); ?>" />
                 </td>
             </tr>
             <tr valign="top">
@@ -86,7 +86,7 @@ $form_disabled = empty( $job_number_get ) || !$phase_valid;
             </tr>
         </table>
         <div class="form-buttons">
-            <?php submit_button( __( 'Stop Job & Save', 'ejpt' ), 'primary', 'stop_job_submit', false, array('id'=>'stop-job-submit', 'disabled' => $form_disabled) ); ?>
+            <?php submit_button( __( 'Stop Job & Save', 'operations-organizer' ), 'primary', 'stop_job_submit', false, array('id'=>'stop-job-submit', 'disabled' => $form_disabled) ); ?>
         </div>
     </form>
 </div>
@@ -116,13 +116,13 @@ jQuery(document).ready(function($) {
     function updateStopButtonState() {
         if (phpFormDisabledStop) {
             stopJobButton.prop('disabled', true);
-            console.log('Stop Job button disabled by PHP.');
+            // console.log('Stop Job button disabled by PHP.');
         } else if (employeeNumberInputStop.val().trim() === '') {
             stopJobButton.prop('disabled', true);
-            console.log('Stop Job button disabled (no employee number entered).');
+            // console.log('Stop Job button disabled (no employee number entered).');
         } else {
             stopJobButton.prop('disabled', false);
-            console.log('Stop Job button enabled.');
+            // console.log('Stop Job button enabled.');
         }
     }
 

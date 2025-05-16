@@ -45,7 +45,7 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
 
 ?>
 <div class="wrap ejpt-start-job-form-page">
-    <h1><?php esc_html_e( 'Start Job Phase', 'ejpt' ); ?></h1>
+    <h1><?php esc_html_e( 'Start Job Phase', 'operations-organizer' ); ?></h1>
 
     <?php if ( empty( $job_number_get ) || empty( $phase_id_get ) ): ?>
         <div class="notice notice-error ejpt-notice"><p>
@@ -66,16 +66,16 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
     <?php endif; ?>
 
 
-    <form id="ejpt-start-job-form" method="post">
-        <?php wp_nonce_field( 'ejpt_start_job_nonce', 'ejpt_start_job_nonce' ); ?>
+    <form id="oo-start-job-form" method="post">
+        <?php wp_nonce_field( 'oo_start_job_nonce', 'oo_start_job_nonce' ); ?>
         <input type="hidden" name="job_number" value="<?php echo esc_attr( $job_number_get ); ?>" />
         <input type="hidden" name="phase_id" value="<?php echo esc_attr( $phase_id_get ); ?>" />
 
         <table class="form-table ejpt-form-table">
             <tr valign="top">
-                <th scope="row"><label for="employee_number_start"><?php esc_html_e( 'Employee Number', 'ejpt' ); ?></label></th>
+                <th scope="row"><label for="employee_number_start"><?php esc_html_e( 'Employee Number', 'operations-organizer' ); ?></label></th>
                 <td>
-                    <input type="text" id="employee_number_start" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'ejpt'); ?>" />
+                    <input type="text" id="employee_number_start" name="employee_number" required <?php disabled($form_disabled); ?> placeholder="<?php esc_attr_e('Enter your Employee No.', 'operations-organizer'); ?>" />
                 </td>
             </tr>
             <tr valign="top">
@@ -96,7 +96,7 @@ if (defined('WP_DEBUG') && WP_DEBUG === true) {
             </tr>
         </table>
         <div class="form-buttons">
-            <?php submit_button( __( 'Start Job', 'ejpt' ), 'primary', 'start_job_submit', false, array('id' => 'start-job-submit', 'disabled' => $form_disabled) ); ?>
+            <?php submit_button( __( 'Start Job', 'operations-organizer' ), 'primary', 'start_job_submit', false, array('id' => 'start-job-submit', 'disabled' => $form_disabled) ); ?>
         </div>
     </form>
 </div>
@@ -126,13 +126,13 @@ jQuery(document).ready(function($) {
     function updateButtonState() {
         if (phpFormDisabled) {
             startJobButton.prop('disabled', true);
-            console.log('Start Job button disabled by PHP.');
+            // console.log('Start Job button disabled by PHP.');
         } else if (employeeNumberInput.val().trim() === '') {
             startJobButton.prop('disabled', true);
-            console.log('Start Job button disabled (no employee number entered).');
+            // console.log('Start Job button disabled (no employee number entered).');
         } else {
             startJobButton.prop('disabled', false);
-            console.log('Start Job button enabled.');
+            // console.log('Start Job button enabled.');
         }
     }
 
