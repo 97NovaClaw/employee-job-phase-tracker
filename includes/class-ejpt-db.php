@@ -834,42 +834,53 @@ class EJPT_DB {
      */
     public static function update_job_log($log_id, $data) {
         ejpt_log('Attempting to update job log ID: ' . $log_id, __METHOD__);
-        ejpt_log($data, __METHOD__);
+        ejpt_log('Raw data received for update:', $data);
         self::init();
-
-        // Define allowable fields and their formats
-        $allowed_fields = array(
-            'employee_id' => '%d',
-            'job_number' => '%s',
-            'phase_id' => '%d',
-            'start_time' => '%s',
-            'end_time' => '%s',
-            'boxes_completed' => '%d',
-            'items_completed' => '%d',
-            'status' => '%s',
-            'notes' => '%s'
-        );
+        global $wpdb;
 
         $update_data = array();
         $update_formats = array();
 
-        foreach ($data as $field => $value) {
-            if (array_key_exists($field, $allowed_fields)) {
-                // Sanitize based on expected type (basic sanitization here)
-                if (in_array($allowed_fields[$field], ['%s'])) {
-                    $update_data[$field] = sanitize_text_field($value);
-                } elseif (in_array($allowed_fields[$field], ['%d'])) {
-                    $update_data[$field] = intval($value);
-                } else {
-                    $update_data[$field] = $value; // Dates, etc.
-                }
-                $update_formats[] = $allowed_fields[$field];
-            }
+        // Whitelist and sanitize fields
+        if (isset($data['employee_id'])) { 
+            $update_data['employee_id'] = intval($data['employee_id']); $update_formats[] = '%d'; 
+        }
+        if (isset($data['job_number'])) { 
+            $update_data['job_number'] = sanitize_text_field($data['job_number']); $update_formats[] = '%s'; 
+        }
+        if (isset($data['phase_id'])) { 
+            $update_data['phase_id'] = intval($data['phase_id']); $update_formats[] = '%d'; 
+        }
+        if (isset($data['start_time'])) { // Already formatted to YYYY-MM-DD HH:MM:SS
+            $update_data['start_time'] = sanitize_text_field($data['start_time']); $update_formats[] = '%s'; 
+        }
+        if (array_key_exists('end_time', $data)) { // Check if key exists to allow setting to NULL
+            $update_data['end_time'] = is_null($data['end_time']) ? null : sanitize_text_field($data['end_time']); 
+            $update_formats[] = '%s'; 
+        }
+        if (array_key_exists('boxes_completed', $data)) {
+            $update_data['boxes_completed'] = is_null($data['boxes_completed']) ? null : intval($data['boxes_completed']); 
+            $update_formats[] = '%d'; 
+        }
+        if (array_key_exists('items_completed', $data)) {
+            $update_data['items_completed'] = is_null($data['items_completed']) ? null : intval($data['items_completed']); 
+            $update_formats[] = '%d'; 
+        }
+        if (isset($data['status'])) { 
+            $update_data['status'] = sanitize_text_field($data['status']); $update_formats[] = '%s'; 
+        }
+        if (isset($data['notes'])) { // notes can be empty string
+            $update_data['notes'] = sanitize_textarea_field($data['notes']); $update_formats[] = '%s'; 
         }
 
         if (empty($update_data)) {
-            return new WP_Error('no_data_to_update', 'No valid data provided for update.');
+            $error = new WP_Error('no_data_to_update', 'No valid data fields provided for update.');
+            ejpt_log('Error updating job log: No data fields to update after sanitization.', $error);
+            return $error;
         }
+        
+        ejpt_log('Sanitized data for $wpdb->update:', $update_data);
+        ejpt_log('Formats for $wpdb->update:', $update_formats);
 
         $result = $wpdb->update(
             self::$job_logs_table,
@@ -880,11 +891,11 @@ class EJPT_DB {
         );
 
         if ($result === false) {
-            $error = new WP_Error('db_error', 'Could not update job log. Error: ' . $wpdb->last_error);
+            $error = new WP_Error('db_error', 'Could not update job log. WPDB Error: ' . $wpdb->last_error);
             ejpt_log('Error updating job log: DB update failed. ' . $wpdb->last_error, $error);
             return $error;
         }
-        ejpt_log('Job log updated successfully. ID: ' . $log_id, __METHOD__);
+        ejpt_log('Job log update result (rows affected or 0 if existing data matched): ' . $result . '. For Log ID: ' . $log_id, __METHOD__);
         return true;
     }
 
